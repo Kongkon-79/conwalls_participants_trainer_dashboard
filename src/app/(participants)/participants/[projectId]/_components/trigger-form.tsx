@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useSystemSettings } from "@/hooks/use-system-settings";
 import { Stakeholder } from "./stakeholder-types";
-import aiIcon from "../../../../../../../public/assets/images/ai.png";
+import aiIcon from "../../../../../../public/assets/images/ai.png";
 import {
   Select,
   SelectContent,

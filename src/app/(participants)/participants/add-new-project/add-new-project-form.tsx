@@ -275,6 +275,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { ProjectListsApiResponse } from "../_components/project-list-data-type";
 import moment from "moment";
+import { useRouter } from "next/navigation";
 
 type NameFormValues = {
   participantName: string;
@@ -290,6 +291,7 @@ export default function AddNewProjectForm() {
   const [step, setStep] = useState(1);
   const [savedName, setSavedName] = useState("");
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Load name from localStorage on mount
   useEffect(() => {
@@ -367,10 +369,10 @@ export default function AddNewProjectForm() {
     },
     onSuccess: () => {
       // Refetch projects after adding new
-      refetch();
-      projectForm.reset();
-      setStep(3);
       queryClient.invalidateQueries({ queryKey: ["insight-engine-list"] });
+      projectForm.reset();
+      router.push("/participants");
+      router.refresh();
     },
     onError: (err: Error) => {
       alert(err.message || "Something went wrong");
@@ -487,41 +489,7 @@ export default function AddNewProjectForm() {
         )}
       </div>
 
-      {/* third part  */}
-      <div>
-        {step === 3 && (
-          <div className="space-y-4">
-            <h2 className="text-xl md:text-2xl text-[#00253E] leading-normal font-medium">
-              <Scroll className="inline -mt-1 mr-1" /> Projects
-            </h2>
-
-            <div>
-              {projectLists.map((project) => (
-                <div
-                  key={project?._id}
-                  className="border border-primary bg-[#00253E] rounded-[8px] shadow-[0_0_10px_0_#0000001A] p-4 mb-4"
-                >
-                  <h4 className="text-xl md:text-2xl text-white font-semibold leading-normal pb-1">
-                    {project.projectTitle || ""}
-                  </h4>
-                  <p className="text-base text-white font-normal leading-normal">
-                    Created Date :{" "}
-                    {moment(project.createdAt).format("DD-MM-YYYY")}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={handleAddFurtherProject}
-              className="h-[56px] flex items-center gap-2 bg-primary font-medium leading-normal text-[#00253E] px-8 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02]"
-            >
-              Add (further projects )
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
+      {/* third part - Removed as redirected to list page instead */}
     </div>
   );
 }

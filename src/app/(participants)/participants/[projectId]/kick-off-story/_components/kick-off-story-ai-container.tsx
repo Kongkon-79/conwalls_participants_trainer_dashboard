@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import React, { useMemo, useState } from "react"
 import { AiApiResponse } from "./kick-off-story-ai-data-type"
 import Image from "next/image"
-import ai_prompt_image from "../../../../../../../../public/assets/images/ai_prompt.png"
+import ai_prompt_image from "../../../../../../../public/assets/images/ai_prompt.png"
 import { toast } from "sonner"
 import { ChevronsLeft, Copy } from "lucide-react"
 
@@ -108,17 +108,15 @@ ${details}
         <div className="flex gap-2">
           <button
             onClick={() => setLanguage("en")}
-            className={`px-3 py-1 rounded-md text-sm ${
-              language === "en" ? "bg-green-500 text-white" : "bg-gray-200"
-            }`}
+            className={`px-3 py-1 rounded-md text-sm ${language === "en" ? "bg-green-500 text-white" : "bg-gray-200"
+              }`}
           >
             EN
           </button>
           <button
             onClick={() => setLanguage("de")}
-            className={`px-3 py-1 rounded-md text-sm ${
-              language === "de" ? "bg-green-500 text-white" : "bg-gray-200"
-            }`}
+            className={`px-3 py-1 rounded-md text-sm ${language === "de" ? "bg-green-500 text-white" : "bg-gray-200"
+              }`}
           >
             DE
           </button>
@@ -159,7 +157,7 @@ ${details}
         </div>
 
         <p className="text-sm md:text-base font-normal text-[#00253E]">Develop a creative headline and create a modern, creative visualization for each slide. Supplement the points from the Insight Engine with additional information from the Internet.
-</p>
+        </p>
 
         {/* Detailed Prompt */}
         <div className="space-y-4">
@@ -178,24 +176,24 @@ ${details}
 
       {/* Buttons */}
 
-       <div className="flex items-center  gap-6">
-                <button
-                  type="button"
-                  onClick={() => window.history.back()}
-                  className="h-[50px] flex items-center gap-2 bg-transparent border border-[#BADA55] text-base font-medium leading-normal text-[#00253E] px-7 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02]"
-                 
-                >
-                  <ChevronsLeft className="h-4 w-4" />
-                  Back
-                </button>
-                <button
-                onClick={handleCopy}
-                  className="h-[50px] flex items-center gap-2 bg-primary text-base font-medium leading-normal text-[#00253E] px-8 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02]"
-                >
-                  <Copy  className="h-4 w-4" />
-                  Copy Prompt
-                </button>
-              </div>
+      <div className="flex items-center  gap-6">
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="h-[50px] flex items-center gap-2 bg-transparent border border-[#BADA55] text-base font-medium leading-normal text-[#00253E] px-7 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02]"
+
+        >
+          <ChevronsLeft className="h-4 w-4" />
+          Back
+        </button>
+        <button
+          onClick={handleCopy}
+          className="h-[50px] flex items-center gap-2 bg-primary text-base font-medium leading-normal text-[#00253E] px-8 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02]"
+        >
+          <Copy className="h-4 w-4" />
+          Copy Prompt
+        </button>
+      </div>
     </div>
   )
 }

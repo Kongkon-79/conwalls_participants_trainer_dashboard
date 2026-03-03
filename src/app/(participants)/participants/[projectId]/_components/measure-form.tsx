@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { useSystemSettings } from '@/hooks/use-system-settings'
 import { Measure } from './measure-types'
-import aiIcon from "../../../../../../../public/assets/images/ai.png"
+import aiIcon from "../../../../../../public/assets/images/ai.png"
 import {
     Select,
     SelectContent,
@@ -212,9 +212,9 @@ export default function MeasureForm({
                         </div>
                     </RadioGroup>
                     <div>
-                        <Link href={`/participants/insight-engine/${projectId}/kick-off-story`} >
-                        <button className='flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white leading-[110%] font-medium'> 
-                           <Image src={aiIcon} alt="AI Icon" className="w-5 h-5 mr-2 object-contain" /> AI <ChevronsRight className='w-5 h-5'/></button>
+                        <Link href={`/participants/${projectId}/kick-off-story`} >
+                            <button className='flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white leading-[110%] font-medium'>
+                                <Image src={aiIcon} alt="AI Icon" className="w-5 h-5 mr-2 object-contain" /> AI <ChevronsRight className='w-5 h-5' /></button>
                         </Link>
                     </div>
                 </div>

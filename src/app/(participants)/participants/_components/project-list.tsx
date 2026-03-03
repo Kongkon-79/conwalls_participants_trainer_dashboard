@@ -112,7 +112,7 @@ const ProjectList = () => {
             return (
               <div key={project?._id} className="relative group">
                 <Link
-                  href={`/participants/insight-engine/${project?._id}`}
+                  href={`/participants/${project?._id}`}
                   className="block"
                 >
                   <div className="border border-primary bg-[#00253E] rounded-[8px] shadow-[0_0_10px_0_#0000001A] p-4 mb-4 cursor-pointer hover:bg-[#003456] transition-all duration-200 pr-16">
