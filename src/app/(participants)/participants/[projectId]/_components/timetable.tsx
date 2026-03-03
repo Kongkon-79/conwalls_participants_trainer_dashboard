@@ -344,7 +344,7 @@ export default function Timetable({
                             {m.name}
                           </span>
                           <span className="text-[11px] text-[#00253E]/70 font-black mt-0.5">
-                            {m.startWeeks} Weeks
+                            {m.startWeeks} Weeks 
                           </span>
                         </div>
                       </div>

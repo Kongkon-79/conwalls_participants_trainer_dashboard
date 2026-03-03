@@ -270,11 +270,10 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { ChevronsRight, Plus, Scroll, User } from "lucide-react";
+import { ChevronsRight, Scroll, User } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { ProjectListsApiResponse } from "../_components/project-list-data-type";
-import moment from "moment";
 import { useRouter } from "next/navigation";
 
 type NameFormValues = {
@@ -316,7 +315,7 @@ export default function AddNewProjectForm() {
   });
 
   // ----------------- Fetch All Projects -----------------
-  const { data, refetch, isLoading, isError, error } =
+  const { isLoading, isError, error } =
     useQuery<ProjectListsApiResponse>({
       queryKey: ["insight-engine-list"],
       queryFn: async () => {
@@ -340,7 +339,6 @@ export default function AddNewProjectForm() {
   console.log("isError", isError);
   console.log("error", error);
 
-  const projectLists = data?.data?.items || [];
 
   // ----------------- Add Project Mutation -----------------
   const { mutate: addProjectMutate, isPending } = useMutation({
@@ -387,11 +385,6 @@ export default function AddNewProjectForm() {
     }
 
     addProjectMutate(values.projectTitle);
-  };
-
-  // ----------------- Step 3: Show Projects -----------------
-  const handleAddFurtherProject = () => {
-    setStep(2);
   };
 
   return (

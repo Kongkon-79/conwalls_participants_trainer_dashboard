@@ -1,4 +1,4 @@
-import { Clock, Download, User } from "lucide-react";
+import { Download, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type Stakeholder } from "./TimeTable";
 
@@ -27,13 +27,13 @@ export default function ListView({ stakeholders }: ListViewProps) {
                 <Download size={12} />
                 Export PDF
               </Button>
-              <Button
+              {/* <Button
                 size="sm"
                 className="h-[46px] bg-[#BADA55] flex items-center gap-1.5 border border-[#BADA55] text-[#00253E] text-base font-medium px-5 py-1.5 rounded-[8px] "
               >
                 <Clock size={12} />
                 Timetable
-              </Button>
+              </Button> */}
             </div>
           </div>
 
