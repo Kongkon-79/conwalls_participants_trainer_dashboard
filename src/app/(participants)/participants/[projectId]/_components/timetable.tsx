@@ -8,7 +8,6 @@ import {
   Download,
   Grid,
   List,
-  Clock,
   User,
   ChevronLeft,
 } from 'lucide-react'
@@ -209,12 +208,6 @@ export default function Timetable({
                 <Download className="w-5 h-5" />
                 Export PDF
               </button>
-              {viewMode === 'list' && (
-                <button className="h-[44px] px-6 bg-[#B5CC2E] rounded text-[14px] font-bold text-[#00253E] flex items-center gap-2 hover:bg-[#A3B829] transition-colors shadow-sm">
-                  <Clock className="w-5 h-5" />
-                  Timetable
-                </button>
-              )}
             </div>
           </div>
 
