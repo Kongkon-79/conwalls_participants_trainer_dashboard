@@ -36,7 +36,7 @@ export default function KickOffDateForm({ onNext, projectTitle, initialDate }: K
                 </h1>
                 <div className="flex items-center gap-2 text-[#00253E]">
                     <CalendarIcon className="w-5 h-5" />
-                    <span className="text-[18px] font-medium">Kick off Date</span>
+                    <span className="notranslate text-[18px] font-medium">Kick off Date</span>
                 </div>
             </div>
 

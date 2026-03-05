@@ -170,8 +170,8 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         </div>
 
         <div className="space-y-3 pt-4">
-          <label className="text-[20px] font-medium text-[#00253E]">
-            Trigger Evaluation
+          <label className="notranslate text-[20px] font-medium text-[#00253E]">
+            Trigger
           </label>
           <RadioGroup
             className="flex gap-6 pt-2"
@@ -186,7 +186,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
               />
               <label
                 htmlFor="low"
-                className="text-[18px] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="notranslate text-[18px] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 Low points
               </label>
@@ -199,7 +199,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
               />
               <label
                 htmlFor="high"
-                className="text-[18px] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="notranslate text-[18px] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 High points
               </label>

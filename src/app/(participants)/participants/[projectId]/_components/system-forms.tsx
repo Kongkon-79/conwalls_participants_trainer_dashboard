@@ -153,7 +153,7 @@ export default function SystemForms({
         </h1>
         <div className="flex items-center gap-2 text-[#00253E]/80">
           <FileText className="w-5 h-5" />
-          <span className="text-[18px] font-medium">
+          <span className="notranslate text-[18px] font-medium">
             Kick off :{' '}
             {new Intl.DateTimeFormat(
               language === 'de' ? 'de-DE' : 'en-GB',
