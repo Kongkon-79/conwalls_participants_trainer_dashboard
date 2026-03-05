@@ -116,7 +116,7 @@ const ProjectList = () => {
                   className="block"
                 >
                   <div className="border border-primary bg-[#00253E] rounded-[8px] shadow-[0_0_10px_0_#0000001A] p-4 mb-4 cursor-pointer hover:bg-[#003456] transition-all duration-200 pr-16">
-                    <h4 className="text-xl md:text-2xl text-white font-semibold leading-normal pb-1 truncate">
+                    <h4 className="notranslate text-xl md:text-2xl text-white font-semibold leading-normal pb-1 truncate">
                       {project.projectTitle || "Untitled Project"}
                     </h4>
                     <p className="text-base text-gray-300 font-normal leading-normal">

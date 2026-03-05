@@ -5,9 +5,10 @@ import { useEffect } from "react";
 
 const config = {
   languages: [
+    { title: 'German', name: 'de' },
     { title: 'English', name: 'en' },
     // { title: 'Bangla', name: 'bn' },
-    { title: 'German', name: 'de' },
+    
   ],
   defaultLanguage: 'en',
 };
