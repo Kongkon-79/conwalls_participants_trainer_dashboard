@@ -19,6 +19,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import { parseCookies } from 'nookies'
 
 interface StakeholderListProps {
     projectId: string
@@ -27,10 +28,14 @@ interface StakeholderListProps {
     onSubStepChange?: (subStep: 'Trigger' | 'Measures' | null) => void
 }
 
+const COOKIE_NAME = "googtrans";
+
 export default function StakeholderList({ projectId, onBack, onNext, onSubStepChange }: StakeholderListProps) {
     const session = useSession()
     const token = (session?.data?.user as { accessToken?: string })?.accessToken
     const queryClient = useQueryClient()
+      const cookie = parseCookies()[COOKIE_NAME];
+  const lang = cookie?.split("/")?.[2] || "en";
 
     const [editingNameId, setEditingNameId] = useState<string | null>(null)
     const [editNameValue, setEditNameValue] = useState('')
@@ -233,7 +238,8 @@ export default function StakeholderList({ projectId, onBack, onNext, onSubStepCh
                                         }}
                                         className="flex items-center gap-2 notranslate text-[16px] font-medium text-[#00253E] hover:text-primary transition-colors"
                                     >
-                                        Measures
+                                        
+                                         {lang === "de" ? "Maßnahmen" : "Measures"}
                                         <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center">
                                             <Plus className="w-4 h-4" />
                                         </div>
@@ -264,9 +270,9 @@ export default function StakeholderList({ projectId, onBack, onNext, onSubStepCh
                 </Button>
                 <Button
                     onClick={onNext}
-                    className="bg-primary hover:bg-primary/90 text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold ml-4"
+                    className="bg-primary notranslate hover:bg-primary/90 text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold ml-4"
                 >
-                    Continue
+                    {lang === "de" ? "Weiter" : "Continue"}
                     <ChevronsRight className="w-5 h-5" />
                 </Button>
             </div>
