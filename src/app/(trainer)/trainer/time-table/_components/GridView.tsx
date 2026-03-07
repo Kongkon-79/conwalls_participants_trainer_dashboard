@@ -5,6 +5,7 @@
 import React, { useRef } from "react";
 import { Download, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Html2PdfOptions } from "html2pdf.js";
 
 export interface Measure {
   _id: string;
@@ -92,23 +93,31 @@ export default function GridView({ stakeholders }: GridViewProps) {
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
 
-    const opt = {
-      margin: 6,
-      filename: `${fileName}.pdf`,
-      image: { type: "jpeg" as const, quality: 0.98 },
-      html2canvas: {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        width: fullWidth,
-        windowWidth: fullWidth,
-        scrollX: 0,
-        scrollY: 0,
-      },
-      // ✅ better for wide timeline
-      jsPDF: { unit: "mm", format: "a3", orientation: "landscape" as const },
-      pagebreak: { mode: ["css", "legacy"] as const },
-    };
+ const opt = {
+  margin: 6,
+  filename: `${fileName}.pdf`,
+  image: {
+    type: 'jpeg',
+    quality: 0.98,
+  },
+  html2canvas: {
+    scale: 3,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    width: fullWidth,
+    windowWidth: fullWidth,
+    scrollX: 0,
+    scrollY: 0,
+  },
+  jsPDF: {
+    unit: 'mm',
+    format: 'a3',
+    orientation: 'landscape',
+  },
+  pagebreak: {
+    mode: ['css', 'legacy'],
+  },
+} satisfies Html2PdfOptions
 
     try {
       await html2pdf().set(opt).from(clone).save();
@@ -254,6 +263,12 @@ export default function GridView({ stakeholders }: GridViewProps) {
     </div>
   );
 }
+
+
+
+
+
+
 
 // import { Download, User } from "lucide-react";
 // import { Button } from "@/components/ui/button";
