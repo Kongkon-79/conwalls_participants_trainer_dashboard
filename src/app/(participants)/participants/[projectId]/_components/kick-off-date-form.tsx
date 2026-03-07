@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ChevronsRight, ChevronLeft } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,6 +11,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { parseCookies } from "nookies";
 
 interface KickOffDateFormProps {
     onNext: (date: Date) => void;
@@ -18,7 +19,11 @@ interface KickOffDateFormProps {
     initialDate?: Date;
 }
 
+const COOKIE_NAME = "googtrans";
+
 export default function KickOffDateForm({ onNext, projectTitle, initialDate }: KickOffDateFormProps) {
+      const cookie = parseCookies()[COOKIE_NAME];
+      const lang = cookie?.split("/")?.[2] || "en";
     const [date, setDate] = useState<Date | undefined>(initialDate);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -66,22 +71,23 @@ export default function KickOffDateForm({ onNext, projectTitle, initialDate }: K
                     </Popover>
                 </div>
 
-                <div className="flex items-center justify-between max-w-2xl">
-                    <Button
+                <div className="flex items-center justify-end max-w-2xl">
+                    {/* <Button
                         type="button"
                         variant="outline"
                         className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-[#00253E]/20 text-[#00253E] hover:bg-gray-50"
                         onClick={() => window.history.back()}
                     >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronsLeft className="h-4 w-4" />
                         Back
-                    </Button>
+                    </Button> */}
                     <Button
                         type="submit"
                         disabled={!date}
                         className="h-[48px] px-10 rounded-[8px] bg-primary text-[#00253E] font-semibold hover:bg-primary/90 transition-all duration-200 active:scale-95 flex items-center gap-2"
                     >
-                        Continue
+                        
+                          {lang === "de" ? "weiter" : "Continue"}
                         <ChevronsRight className="h-4 w-4" />
                     </Button>
                 </div>

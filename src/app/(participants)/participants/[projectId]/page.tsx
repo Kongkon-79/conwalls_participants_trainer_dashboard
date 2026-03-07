@@ -11,10 +11,15 @@ import { Loader2 } from 'lucide-react'
 import StepNavigation from './_components/step-navigation'
 import { Scroll, Users, ClipboardList, Clock } from 'lucide-react'
 import Timetable from './_components/timetable'
+import { parseCookies } from 'nookies'
 
 
+
+const COOKIE_NAME = "googtrans";
 
 export default function InsightEnginePage() {
+   const cookie = parseCookies()[COOKIE_NAME];
+        const lang = cookie?.split("/")?.[2] || "en";
   const { projectId } = useParams() as { projectId: string }
   const session = useSession()
   const token = (session?.data?.user as { accessToken?: string })?.accessToken
@@ -61,27 +66,19 @@ export default function InsightEnginePage() {
 
   const STEPS = [
     { id: 1, title: projectTitle, icon: Scroll },
-    { id: 2, title: 'Stakeholder', icon: Users },
-    { id: 3, title: activeSubStep === 'Trigger' ? 'Trigger' : 'Measures', icon: ClipboardList },
+    { id: 2, title: lang === "de" ? "Zielgruppen" : "Stakeholder", icon: Users },
+    { id: 3, title: activeSubStep === 'Trigger' ? 'Trigger' : lang === "de" ? "Maßnahmen" : "Measures", icon: ClipboardList },
     { id: 4, title: 'Timetable', icon: Clock },
   ];
 
-  // Logic to determine which tab should be ACTIVE based on internal state
-  // Step 1: KickOffDateForm -> Active: 1 (Project Title)
-  // Step 2: SystemForms -> Active: 1 (Project Title) - This fixes the first issue
-  // Step 3: StakeholderList (List view) -> Active: 2 (Stakeholder) - This fixes the second issue
-  // Step 3: StakeholderList (Trigger sub-step) -> Active: 3 (Trigger)
-  // Step 3: StakeholderList (Measures sub-step) -> Active: 3 (Measures)
-  // Step 4: Timetable -> Active: 4 (Timetable)
-
   let activeTabId = step;
   if (step === 2) {
-    activeTabId = 1; // Highlight Project Tab during System Forms
+    activeTabId = 1; 
   } else if (step === 3) {
     if (activeSubStep === 'Trigger' || activeSubStep === 'Measures') {
-      activeTabId = 3; // Highlight Measures/Trigger during sub-steps
+      activeTabId = 3; 
     } else {
-      activeTabId = 2; // Highlight Stakeholder during List view
+      activeTabId = 2;
     }
   }
 
