@@ -142,7 +142,7 @@ export default function MeasureForm({
 
   return (
     <div className="w-full space-y-8 pb-10">
-      <div className="space-y-2">
+      <div className="space-y-0">
         <h1 className="text-[32px] font-semibold text-[#00253E]">
           {initialData
             ? lang === "de"
@@ -154,7 +154,7 @@ export default function MeasureForm({
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Category */}
         <div className="space-y-3">
           <label className="text-[20px] font-medium text-[#00253E]">
@@ -171,7 +171,7 @@ export default function MeasureForm({
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent className="bg-white">
-              {categories.map((c) => (
+              {categories?.map((c) => (
                 <SelectItem key={c.name} value={c.name}>
                   {c.name}
                 </SelectItem>
@@ -188,7 +188,7 @@ export default function MeasureForm({
               <SelectValue placeholder="Select Type" />
             </SelectTrigger>
             <SelectContent className="bg-white">
-              {allMeasureTypes.map((t) => (
+              {allMeasureTypes?.map((t) => (
                 <SelectItem key={t?.name} value={t?.name}>
                   {t?.name}
                 </SelectItem>
@@ -276,7 +276,7 @@ export default function MeasureForm({
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-[#00253E]/20 text-[#00253E] hover:bg-gray-50 bg-white"
+            className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-primary font-medium text-[#00253E] hover:bg-gray-50 bg-white"
           >
             <ChevronLeft className="w-5 h-5" />
             Back

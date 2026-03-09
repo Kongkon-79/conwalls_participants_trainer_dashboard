@@ -42,7 +42,7 @@ export function DashboardSidebar() {
 
   return (
     <div>
-      <Sidebar className="h-[calc(100vh-106px)] border-none w-[320px] mt-[106px]">
+      <Sidebar className="h-[calc(100vh-90px)] border-none w-[320px] mt-[90px]">
         {/* ✅ full height */}
         <SidebarContent className="bg-primary scrollbar-hide h-full">
           {/* ✅ full height */}

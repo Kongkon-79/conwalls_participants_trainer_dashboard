@@ -3,16 +3,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { RiInformationFill } from "react-icons/ri";
 import { useForm } from "react-hook-form";
 import {
   Info,
   ChevronLeft,
   ChevronsRight,
-  FileText,
-  History as LucideHistory,
-  AlertTriangle,
-  ShieldAlert,
-  Lightbulb,
+  CalendarDays,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useSystemSettings } from "@/hooks/use-system-settings";
@@ -21,13 +18,16 @@ import { parseCookies } from "nookies";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+import penIcon from "../../../../../../public/assets/images/pen.png"
+import Image from "next/image";
 
 interface SystemFormsProps {
   projectId: string;
@@ -60,7 +60,7 @@ export default function SystemForms({
   const lang = cookie?.split("/")?.[2] || "en";
   const session = useSession();
   const token = (session?.data?.user as { accessToken?: string })?.accessToken;
-  const router = useRouter();
+  // const router = useRouter();
   const [language, setLanguage] = useState<"en" | "de">("en");
 
   useEffect(() => {
@@ -153,8 +153,8 @@ export default function SystemForms({
         <h1 className="text-[32px] notranslate font-semibold text-[#00253E]">
           {projectTitle}
         </h1>
-        <div className="flex items-center gap-2 text-[#00253E]/80">
-          <FileText className="w-5 h-5" />
+        <div className="flex items-center gap-2 text-[#00253E]">
+          <CalendarDays className="w-5 h-5" />
           <span className="notranslate text-[18px] font-medium">
             Kick off :{" "}
             {new Intl.DateTimeFormat(
@@ -165,11 +165,11 @@ export default function SystemForms({
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-8">
+        <div className="grid gap-4">
           {/* Vision */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#00253E]/60" />
+              <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
               <label className="text-[20px] font-medium text-[#00253E]">
                 Vision
               </label>
@@ -178,14 +178,14 @@ export default function SystemForms({
             <Textarea
               {...register("vision")}
               placeholder="What will the further look like?"
-              className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[16px] placeholder:text-[#616161]"
+              className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
             />
           </div>
 
           {/* Past */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <LucideHistory className="w-5 h-5 text-[#00253E]/60" />
+               <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
               <label className="text-[20px] font-medium text-[#00253E]">
                 
                 {lang === "de" ? "Vergangenheit" : "The past (good old days)"}
@@ -195,14 +195,14 @@ export default function SystemForms({
             <Textarea
               {...register("pastGoodOldDays")}
               placeholder="Describe how this were in the past.."
-              className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[16px] placeholder:text-[#616161]"
+              className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
             />
           </div>
 
           {/* Obstacle */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-[#00253E]/60" />
+               <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
               <label className="text-[20px] font-medium text-[#00253E]">
                 
                 {lang === "de" ? "Hindernis / Problem" : "Obstacle / Problem"}
@@ -212,14 +212,14 @@ export default function SystemForms({
             <Textarea
               {...register("obstacleProblem")}
               placeholder="what problem are you Facing?"
-              className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[16px] placeholder:text-[#616161]"
+              className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
             />
           </div>
 
           {/* Risk */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-[#00253E]/60" />
+               <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
               <label className="text-[20px] font-medium text-[#00253E]">
                 
                 {lang === "de" ? "Risiko / Konsequenzen" : "Risk of inaction / Consequences"}
@@ -229,14 +229,14 @@ export default function SystemForms({
             <Textarea
               {...register("riskOfInaction")}
               placeholder="What happens if we don't change?"
-              className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[16px] placeholder:text-[#616161]"
+              className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
             />
           </div>
 
           {/* Solution */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-[#00253E]/60" />
+               <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
               <label className="text-[20px] font-medium text-[#00253E]">
                 
                 {lang === "de" ? "Idee / Lösung" : "Solution / Idea"}
@@ -246,17 +246,17 @@ export default function SystemForms({
             <Textarea
               {...register("solutionIdea")}
               placeholder="what's the solutions?"
-              className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[16px] placeholder:text-[#616161]"
+              className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-6">
+        <div className="flex items-center justify-between pt-2">
           <Button
             type="button"
             variant="outline"
             onClick={onBack}
-            className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-[#00253E]/20 text-[#00253E] hover:bg-gray-50 bg-white"
+            className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-primary font-medium text-[#00253E] hover:bg-gray-50 bg-white"
           >
             <ChevronLeft className="w-5 h-5" />
             Back
@@ -283,31 +283,6 @@ export default function SystemForms({
   );
 }
 
-// function HelpIcon({ text }: { text: string }) {
-//   if (!text) return null
-//   return (
-//     <TooltipProvider delayDuration={0}>
-//       <Tooltip>
-//         <TooltipTrigger asChild>
-//           <button type="button" className="outline-none">
-//             <Info className="w-5 h-5 text-[#00253E]/60 hover:text-[#00253E] cursor-pointer" />
-//           </button>
-//         </TooltipTrigger>
-//         <TooltipContent
-//           side="top"
-//           align="start"
-//           className="max-w-[400px] bg-[#00253E] text-white p-3 rounded-[4px] shadow-2xl border-t-4 border-primary animate-in fade-in slide-in-from-bottom-2"
-//         >
-//           <div className="flex gap-3">
-//             <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-//             <p className="text-[14px] leading-relaxed">{text}</p>
-//           </div>
-//         </TooltipContent>
-//       </Tooltip>
-//     </TooltipProvider>
-//   )
-// }
-
 function HelpIcon({ text }: { text: string }) {
   if (!text) return null;
 
@@ -325,7 +300,7 @@ function HelpIcon({ text }: { text: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" className="outline-none">
-            <Info className="w-5 h-5 text-[#00253E]/60 hover:text-[#00253E] cursor-pointer" />
+            <RiInformationFill className="w-5 h-5 text-[#00253E] cursor-pointer" />
           </button>
         </TooltipTrigger>
 
@@ -335,7 +310,7 @@ function HelpIcon({ text }: { text: string }) {
           sideOffset={8}
           // 🔥 This forces wrapping (Radix sometimes applies nowrap)
           style={{ whiteSpace: "normal" }}
-          className="max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl bg-[#00253E] text-white p-3 rounded-[4px] shadow-2xl border-t-4 border-primary animate-in fade-in slide-in-from-bottom-2"
+          className="max-w-xl lg:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl bg-[#00253E] text-white p-3 rounded-[4px] shadow-2xl border-t-4 border-primary animate-in fade-in slide-in-from-bottom-2"
         >
           <div className="flex gap-3">
             <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />

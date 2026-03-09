@@ -152,7 +152,7 @@ const LoginForm = () => {
   return (
     <div>
       <div className="w-full md:w-[479px] bg-white rounded-[16px] border-[2px] border-[#E7E7E7] shadow-[0px_0px_10px_0px_#0000001A] p-6">
-        <div className="w-full flex items-center justify-center pb-6">
+        <div className="w-full flex items-center justify-center pb-4 xl:pb-5 2xl:pb-6">
           <Link href="/">
             <Image
               src={AuthImage}
@@ -173,7 +173,7 @@ const LoginForm = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-2 pt-5 md:pt- lg:pt-8"
+            className="space-y-2 pt-3 md:pt-4 2xl:pt-6"
           >
             <FormField
               control={form.control}

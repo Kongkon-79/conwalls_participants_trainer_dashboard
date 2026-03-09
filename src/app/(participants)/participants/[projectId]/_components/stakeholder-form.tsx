@@ -4,7 +4,7 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
-import { ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import { ChevronLeft, ChevronsRight, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -79,7 +79,7 @@ export default function StakeholderForm({
                     <Input
                         {...register('name', { required: true })}
                         placeholder="e.g. Accounting, IT Department, Sales team"
-                        className="h-[48px] border-[#00253E]/20 text-[16px] rounded-[4px] focus-visible:ring-primary shadow-sm placeholder:text-[#616161]"
+                        className="h-[48px] border-[#00253E] text-[16px] rounded-[4px] focus-visible:ring-primary shadow-sm placeholder:text-[#616161]"
                     />
                 </div>
 
@@ -88,7 +88,7 @@ export default function StakeholderForm({
                         type="button"
                         variant="outline"
                         onClick={onCancel}
-                        className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-[#00253E]/20 text-[#00253E] hover:bg-gray-50 bg-white cursor-pointer"
+                        className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 font-medium border-primary text-[#00253E] hover:bg-gray-50 bg-white"
                     >
                         <ChevronLeft className="w-5 h-5" />
                         Back
@@ -100,7 +100,7 @@ export default function StakeholderForm({
                         className="bg-primary hover:bg-primary/90 text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold transition-all duration-200"
                     >
                         {submitMutation.isPending ? 'Adding...' : 'Add'}
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronsRight className="w-5 h-5" />
                     </Button>
                 </div>
             </form>

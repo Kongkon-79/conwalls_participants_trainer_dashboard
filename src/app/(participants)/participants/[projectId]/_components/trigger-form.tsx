@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useSystemSettings } from "@/hooks/use-system-settings";
 import { Stakeholder } from "./stakeholder-types";
+import penIcon from "../../../../../../public/assets/images/pen.png"
 import aiIcon from "../../../../../../public/assets/images/ai.png";
 import {
   Select,
@@ -27,6 +28,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Link from "next/link";
 import Image from "next/image";
+import { RiInformationFill } from "react-icons/ri";
 
 interface TriggerFormProps {
   stakeholder: Stakeholder;
@@ -112,13 +114,13 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
 
   return (
     <div className="w-full space-y-8 pb-10">
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <h1 className="text-[32px] font-semibold text-[#00253E]">
           Trigger Details for {stakeholder.name}
         </h1>
-      </div>
+      </div> */}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Role Type */}
         <div className="space-y-3">
           <label className="text-[20px] font-medium text-[#00253E]">Role</label>
@@ -126,7 +128,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             value={roleValue}
             onValueChange={(v) => setValue("roleType", v)}
           >
-            <SelectTrigger className="w-full max-w-sm h-[48px] border-[#00253E]/20 text-[18px]">
+            <SelectTrigger className="w-[280px] !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[54px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl">
               <SelectValue placeholder="Select Type" />
             </SelectTrigger>
             <SelectContent className="bg-white">
@@ -142,6 +144,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         {/* Pain Point */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
+            <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
             <label className="text-[20px] font-medium text-[#00253E]">
               Pain point
             </label>
@@ -150,13 +153,14 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("painPoint")}
             placeholder="What's their Pain point?"
-            className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[16px]"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
         {/* Benefits */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
+            <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
             <label className="text-[20px] font-medium text-[#00253E]">
               Benefits
             </label>
@@ -165,16 +169,16 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("benefits")}
             placeholder="What's benefits they will get"
-            className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[16px]"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
-        <div className="space-y-3 pt-4">
+        <div className="space-y-3">
           <label className="notranslate text-[20px] font-medium text-[#00253E]">
-            Trigger
+            Trigger Evaluations
           </label>
           <RadioGroup
-            className="flex gap-6 pt-2"
+            className="h-[54px] w-[300px] flex gap-6 border border-primary rounded-[8px] px-4"
             value={triggerEvalValue}
             onValueChange={(v: string) => setValue("triggerEvaluation", v)}
           >
@@ -208,7 +212,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         </div>
 
         {/* Objections */}
-        <div className="space-y-3 pt-4">
+        <div className="space-y-3">
           {/* <div className="flex items-center gap-2">
             <label className="text-[20px] font-medium text-[#00253E]">
               Objections / Concerns
@@ -217,6 +221,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           </div> */}
 
           <div className="flex items-center gap-2">
+            <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
             <label className="text-[20px] font-medium text-[#00253E]">
               Objections / Concerns
             </label>
@@ -225,13 +230,14 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("objectionsConcerns")}
             placeholder="What are their concerns?"
-            className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[18px]"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
         {/* Objection Handling */}
-        <div className="space-y-3 pt-4">
+        <div className="space-y-3 ">
           <div className="flex items-center gap-2">
+            <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
             <label className="text-[20px] font-medium text-[#00253E]">
               Objection Handling
             </label>
@@ -240,7 +246,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("objectionHandling")}
             placeholder="How will you address their concerns?"
-            className="min-h-[100px] border-[#00253E]/20 rounded-[4px] focus-visible:ring-primary shadow-sm text-[18px]"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
@@ -264,7 +270,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             type="button"
             variant="outline"
             onClick={onBack}
-            className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-[#00253E]/20 text-[#00253E] hover:bg-gray-50 bg-white"
+            className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-primary font-medium text-[#00253E] hover:bg-gray-50 bg-white"
           >
             <ChevronLeft className="w-5 h-5" />
             Back
@@ -282,31 +288,6 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
     </div>
   );
 }
-
-// function HelpIcon({ text }: { text: string }) {
-//   if (!text) return null;
-//   return (
-//     <TooltipProvider delayDuration={0}>
-//       <Tooltip>
-//         <TooltipTrigger asChild>
-//           <button type="button" className="outline-none">
-//             <Info className="w-5 h-5 text-[#00253E]/60 hover:text-[#00253E] cursor-pointer" />
-//           </button>
-//         </TooltipTrigger>
-//         <TooltipContent
-//           side="top"
-//           align="start"
-//           className="max-w-[400px] bg-[#00253E] text-white p-3 rounded-[4px] shadow-2xl border-t-4 border-primary animate-in fade-in slide-in-from-bottom-2"
-//         >
-//           <div className="flex gap-3">
-//             <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-//             <p className="text-[14px] leading-relaxed">{text}</p>
-//           </div>
-//         </TooltipContent>
-//       </Tooltip>
-//     </TooltipProvider>
-//   );
-// }
 
 
 
@@ -329,7 +310,7 @@ function HelpIcon({ text }: { text: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" className="outline-none">
-            <Info className="w-5 h-5 text-[#00253E]/60 hover:text-[#00253E] cursor-pointer" />
+             <RiInformationFill className="w-5 h-5 text-[#00253E] cursor-pointer" />
           </button>
         </TooltipTrigger>
 
@@ -339,7 +320,7 @@ function HelpIcon({ text }: { text: string }) {
           sideOffset={8}
           // ✅ Force wrap (Radix tooltip uses nowrap by default sometimes)
           style={{ whiteSpace: "normal" }}
-          className="max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl bg-[#00253E] text-white p-3 rounded-[4px] shadow-2xl border-t-4 border-primary animate-in fade-in slide-in-from-bottom-2"
+          className="max-w-xl lg:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl bg-[#00253E] text-white p-3 rounded-[4px] shadow-2xl border-t-4 border-primary animate-in fade-in slide-in-from-bottom-2"
         >
           <div className="flex gap-3">
             <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />

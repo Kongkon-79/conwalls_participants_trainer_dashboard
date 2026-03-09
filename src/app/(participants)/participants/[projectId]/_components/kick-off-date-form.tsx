@@ -34,7 +34,7 @@ export default function KickOffDateForm({ onNext, projectTitle, initialDate }: K
     };
 
     return (
-        <div className="w-full space-y-6">
+        <div className="w-full space-y-5">
             <div className="space-y-2">
                 <h1 className="text-[32px] notranslate font-semibold text-[#00253E] leading-tight">
                     {projectTitle}
@@ -45,7 +45,7 @@ export default function KickOffDateForm({ onNext, projectTitle, initialDate }: K
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-10">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="flex flex-col gap-2 max-w-2xl">
                     <Popover>
                         <PopoverTrigger asChild>
