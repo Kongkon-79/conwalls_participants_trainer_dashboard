@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronsRight,
   CalendarDays,
+  ChevronsLeft,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useSystemSettings } from "@/hooks/use-system-settings";
@@ -258,8 +259,8 @@ export default function SystemForms({
             onClick={onBack}
             className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-primary font-medium text-[#00253E] hover:bg-gray-50 bg-white"
           >
-            <ChevronLeft className="w-5 h-5" />
-            Back
+            <ChevronsLeft className="w-5 h-5" />
+             {lang === "de" ? "abbrechen" : "Cancel"}
           </Button>
 
           <Button

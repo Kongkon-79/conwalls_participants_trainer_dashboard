@@ -67,6 +67,30 @@ export default function MeasureForm({
     }
   }, []);
 
+  const getCategoryLabel = (name: string) => {
+    if (lang === "de") {
+      const map: Record<string, string> = {
+        Communication: "Kommunikation",
+        Marketing: "Marketing",
+        Planning: "Planung",
+      };
+      return map[name] || name;
+    }
+    return name;
+  };
+
+  const getTypeLabel = (name: string) => {
+    if (lang === "de") {
+      const map: Record<string, string> = {
+        Email: "E-Mail",
+        Meeting: "Meeting",
+        Workshop: "Workshop",
+      };
+      return map[name] || name;
+    }
+    return name;
+  };
+
   const { data: systemSettings } = useSystemSettings();
   const categories = systemSettings?.categoryTypes || [];
   const allMeasureTypes = systemSettings?.measureTypes || [];
@@ -156,7 +180,7 @@ export default function MeasureForm({
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Category */}
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <label className="text-[20px] font-medium text-[#00253E]">
             Category
           </label>
@@ -164,33 +188,85 @@ export default function MeasureForm({
             value={selectedCategory}
             onValueChange={(v) => {
               setValue("category", v);
-              setValue("type", ""); // Reset type when category changes
+              setValue("type", ""); 
             }}
           >
-            <SelectTrigger className="w-full h-[48px] border-[#00253E]/20 text-[18px]">
+            <SelectTrigger className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[48px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl placeholder:text-[#616161]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-white ">
               {categories?.map((c) => (
-                <SelectItem key={c.name} value={c.name}>
+                <SelectItem key={c.name} value={c.name} className="notranslate">
                   {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div> */}
+
+        {/* Type */}
+        {/* <div className="space-y-3 ">
+          <label className="text-[20px] font-medium text-[#00253E]">Type</label>
+          <Select value={typeValue} onValueChange={(v) => setValue("type", v)}>
+            <SelectTrigger className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[48px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl placeholder:text-[#616161]">
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {allMeasureTypes?.map((t) => (
+                <SelectItem key={t?.name} value={t?.name} className="notranslate">
+                  {t?.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div> */}
+
+        <div className="space-y-3">
+          <label className="text-[20px] font-medium text-[#00253E] notranslate">
+            {lang === "de" ? "Kategorie" : "Category"}
+          </label>
+
+          <Select
+            value={selectedCategory}
+            onValueChange={(v) => {
+              setValue("category", v);
+              setValue("type", "");
+            }}
+          >
+            <SelectTrigger className="notranslate w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[48px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl placeholder:text-[#616161]">
+              <SelectValue
+                placeholder={lang === "de" ? "Kategorie" : "Category"}
+              />
+            </SelectTrigger>
+            <SelectContent className="bg-white notranslate">
+              {categories?.map((c) => (
+                <SelectItem key={c.name} value={c.name} className="notranslate">
+                  {getCategoryLabel(c.name)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Type */}
-        <div className="space-y-3 ">
-          <label className="text-[20px] font-medium text-[#00253E]">Type</label>
+        <div className="space-y-3">
+          <label className="text-[20px] font-medium text-[#00253E] notranslate">
+            {lang === "de" ? "Typ" : "Type"}
+          </label>
+
           <Select value={typeValue} onValueChange={(v) => setValue("type", v)}>
-            <SelectTrigger className="w-full h-[48px] border-[#00253E]/20 text-[18px]">
-              <SelectValue placeholder="Select Type" />
+            <SelectTrigger className="notranslate w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[48px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl placeholder:text-[#616161]">
+              <SelectValue
+                placeholder={lang === "de" ? "Typ auswählen" : "Select Type"}
+              />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-white notranslate">
               {allMeasureTypes?.map((t) => (
-                <SelectItem key={t?.name} value={t?.name}>
-                  {t?.name}
+                <SelectItem
+                  key={t?.name}
+                  value={t?.name}
+                  className="notranslate"
+                >
+                  {getTypeLabel(t?.name)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -203,7 +279,7 @@ export default function MeasureForm({
           <Input
             {...register("name", { required: true })}
             placeholder="Enter Measures Name"
-            className="h-[48px] border-[#00253E]/20 text-[18px] rounded-[4px] focus-visible:ring-primary shadow-sm"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[48px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl placeholder:text-[#616161]"
           />
         </div>
 
@@ -217,49 +293,56 @@ export default function MeasureForm({
               type="number"
               min="0"
               {...register("startWeeks", { required: true })}
-              className="w-24 h-[48px] border-[#00253E]/20 text-[18px] rounded-[4px] text-center focus-visible:ring-primary shadow-sm"
+              className="w-24 h-[48px] border-[#00253E] text-[18px] rounded-[4px] text-center focus-visible:ring-primary shadow-sm"
             />
-            <span className="text-[18px] text-[#00253E]">Weeks</span>
+            <span className="text-lg md:text-xl font-normal text-[#00253E] leading-normal">
+              Weeks
+            </span>
           </div>
         </div>
 
         {/* Timing */}
         <div className="flex items-center justify-between space-y-3 pt-6 ">
-          <RadioGroup
-            className="flex items-center gap-6"
-            value={timingValue}
-            onValueChange={(v: string) => setValue("timing", v)}
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem
-                value="pre"
-                id="pre"
-                className="text-primary border-primary w-5 h-5"
-              />
-              <label
-                htmlFor="pre"
-                className="text-[18px] font-medium leading-none"
-              >
-                Pre
-              </label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem
-                value="post"
-                id="post"
-                className="text-primary border-primary w-5 h-5"
-              />
-              <label
-                htmlFor="post"
-                className="text-[18px] font-medium leading-none"
-              >
-                Post kick off
-              </label>
-            </div>
-          </RadioGroup>
+          <div className="flex items-center gap-4">
+            <RadioGroup
+              className="flex items-center gap-6 border border-[#00253E] rounded-[8px] px-4 py-3"
+              value={timingValue}
+              onValueChange={(v: string) => setValue("timing", v)}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="pre"
+                  id="pre"
+                  className="text-primary border-primary w-5 h-5"
+                />
+                <label
+                  htmlFor="pre"
+                  className="text-lg md:text-xl font-normal leading-normal text-[#001B31] notranslate"
+                >
+                  Pre
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="post"
+                  id="post"
+                  className="text-primary border-primary w-5 h-5"
+                />
+                <label
+                  htmlFor="post"
+                  className="text-lg md:text-xl font-normal leading-normal text-[#001B31] notranslate"
+                >
+                  Post
+                </label>
+              </div>
+            </RadioGroup>
+            <p className="text-lg md:text-xl font-normal text-[#00253E] leading-normal notranslate">
+              kick off
+            </p>
+          </div>
           <div>
             <Link href={`/participants/${projectId}/kick-off-story`}>
-              <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white leading-[110%] font-medium">
+              <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white leading-[110%] font-medium notranslate">
                 <Image
                   src={aiIcon}
                   alt="AI Icon"

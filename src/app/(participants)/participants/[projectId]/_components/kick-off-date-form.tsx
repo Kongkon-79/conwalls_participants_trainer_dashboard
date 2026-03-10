@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ChevronsRight } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -71,16 +71,16 @@ export default function KickOffDateForm({ onNext, projectTitle, initialDate }: K
                     </Popover>
                 </div>
 
-                <div className="flex items-center justify-end max-w-2xl">
-                    {/* <Button
+                <div className="flex items-center justify-between max-w-2xl">
+                    <Button
                         type="button"
                         variant="outline"
                         className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 border-[#00253E]/20 text-[#00253E] hover:bg-gray-50"
                         onClick={() => window.history.back()}
                     >
                         <ChevronsLeft className="h-4 w-4" />
-                        Back
-                    </Button> */}
+                        {lang === "de" ? "abbrechen" : "Cancel"}
+                    </Button>
                     <Button
                         type="submit"
                         disabled={!date}

@@ -32,6 +32,9 @@ export default function MeasureList({
   const token = (session?.data?.user as { accessToken?: string })?.accessToken
   const queryClient = useQueryClient()
 
+  console.log("projectId", projectId)
+console.log("Stakeholder Id", stakeholder?._id)
+
   const [isAdding, setIsAdding] = useState(false)
   const [editingMeasure, setEditingMeasure] = useState<Measure | null>(null)
 

@@ -63,6 +63,9 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
     return help?.values?.en || "";
   };
 
+
+
+
   const { register, handleSubmit, setValue, watch } =
     useForm<TriggerFormValues>({
       defaultValues: {
@@ -254,7 +257,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Link
             href={`/participants/insight-engine/trigger-ai`}
           >
-            <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white leading-[110%] font-medium">
+            <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white notranslate leading-[110%] font-medium">
               <Image
                 src={aiIcon}
                 alt="AI Icon"

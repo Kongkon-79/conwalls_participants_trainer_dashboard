@@ -142,7 +142,7 @@ const ProjectList = () => {
 
       {
         paginationInfo && paginationInfo.totalPages > 1 && (
-          <div className="mt-12 mb-10 flex flex-row items-center justify-between border-t border-gray-100 pt-10 pb-6 px-4">
+          <div className="mt-12 mb-10 flex flex-row items-center justify-between border-t border-gray-100 pt-1 pb-6 px-4">
             <div className="text-[20px] font-semibold text-[#00253E]">
               Showing {(Number(paginationInfo.currentPage) - 1) * limit + 1} to {Math.min(Number(paginationInfo.currentPage) * limit, Number(paginationInfo.totalData))} of {Number(paginationInfo.totalData)} results
             </div>

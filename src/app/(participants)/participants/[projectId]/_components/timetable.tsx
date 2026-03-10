@@ -308,7 +308,7 @@ export default function Timetable({
             <div className="flex items-center gap-2 text-[15px] text-gray-500">
               <span className='notranslate'>{projectTitle || 'New ERP System'}</span>
               <span className="text-gray-400">&gt;</span>
-              <span className="text-[#00253E] font-medium">{lang === "de" ? "Timetable" : "Time Table"}</span>
+              <span className="text-[#00253E] font-medium notranslate">{lang === "de" ? "Timetable" : "Time Table"}</span>
             </div>
           </div>
 
@@ -324,7 +324,6 @@ export default function Timetable({
               >
                 <Grid className="w-5 h-5" />
                 {lang === "de" ? "Rasteransicht" : "Grid View"}
-                Grid View
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -341,17 +340,17 @@ export default function Timetable({
             </div>
 
             <div className="flex flex-col gap-4 text-[15px] font-bold pt-1">
-              <div className="flex items-center gap-4 text-[#00253E]">
+              <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#B5CC2E] rounded-sm"></span>
                 
                  {lang === "de" ? "Kommunikation" : "Communication"}
               </div>
-              <div className="flex items-center gap-4 text-[#00253E]">
+              <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#00253E] rounded-sm"></span>
                 
                  {lang === "de" ? "Einbindung" : "Involvement"}
               </div>
-              <div className="flex items-center gap-4 text-[#00253E]">
+              <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#A91D54] rounded-sm"></span>
                 
                  {lang === "de" ? "Anerkennung" : "Recognition"}
