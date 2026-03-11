@@ -10,7 +10,7 @@ const HomeContainer = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push("/login");
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [router]);

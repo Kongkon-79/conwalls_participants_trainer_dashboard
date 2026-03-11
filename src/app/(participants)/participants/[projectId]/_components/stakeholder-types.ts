@@ -8,6 +8,7 @@ export interface Stakeholder {
     triggerEvaluation?: "" | "LOW_POINTS" | "HIGH_POINTS";
     objectionsConcerns?: string;
     objectionHandling?: string;
+    callToAction?: string;
     createdAt: string;
     updatedAt: string;
     measures?: unknown[]; // Array of measures from the backend if populated, else unused here

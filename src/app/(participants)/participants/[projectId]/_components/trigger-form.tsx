@@ -42,6 +42,7 @@ type TriggerFormValues = {
   triggerEvaluation: string;
   objectionsConcerns: string;
   objectionHandling: string;
+  callToAction: string;
 };
 
 export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
@@ -75,6 +76,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         triggerEvaluation: stakeholder.triggerEvaluation || "",
         objectionsConcerns: stakeholder.objectionsConcerns || "",
         objectionHandling: stakeholder.objectionHandling || "",
+        callToAction: stakeholder.callToAction || "",
       },
     });
 
@@ -156,7 +158,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("painPoint")}
             placeholder="What's their Pain point?"
-            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
@@ -172,7 +174,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("benefits")}
             placeholder="What's benefits they will get"
-            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
@@ -233,7 +235,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("objectionsConcerns")}
             placeholder="What are their concerns?"
-            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
@@ -249,7 +251,23 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <Textarea
             {...register("objectionHandling")}
             placeholder="How will you address their concerns?"
-            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
+          />
+        </div>
+
+           {/* call to action Handling */}
+        <div className="space-y-3 ">
+          <div className="flex items-center gap-2">
+            <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
+            <label className="text-[20px] font-medium text-[#00253E]">
+              Call to Action
+            </label>
+            <HelpIcon text={getHelpText("callToAction")} />
+          </div>
+          <Textarea
+            {...register("callToAction")}
+            placeholder="How will you address their concerns?"
+            className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 

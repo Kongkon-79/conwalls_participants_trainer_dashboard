@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={nunito.variable}>
+    <html lang="en"  className={nunito.variable}>
       <body className={`font-nunito antialiased`}>
         <AuthProvider>
           <AppProvider>
