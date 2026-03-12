@@ -341,7 +341,13 @@ export default function MeasureForm({
             </p>
           </div>
           <div>
-            <Link href={`/participants/${projectId}/kick-off-story`}>
+            <Link
+              // href={`/participants/${projectId}/kick-off-story`}
+              href={{
+                pathname: `/participants/${projectId}/kick-off-story`,
+                query: { type: typeValue },
+              }}
+            >
               <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white leading-[110%] font-medium notranslate">
                 <Image
                   src={aiIcon}
