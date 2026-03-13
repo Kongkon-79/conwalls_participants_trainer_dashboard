@@ -1,121 +1,119 @@
-"use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+'use client'
 
-import React from "react";
-import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import { ChevronLeft, ChevronsRight, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { useSystemSettings } from "@/hooks/use-system-settings";
-import { Stakeholder } from "./stakeholder-types";
-import penIcon from "../../../../../../public/assets/images/pen.png"
-import aiIcon from "../../../../../../public/assets/images/ai.png";
+import React from 'react'
+import { useForm } from 'react-hook-form'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
+import { ChevronLeft, ChevronsRight, Info } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
+import { useSystemSettings } from '@/hooks/use-system-settings'
+import { Stakeholder } from './stakeholder-types'
+import penIcon from '../../../../../../public/assets/images/pen.png'
+import aiIcon from '../../../../../../public/assets/images/ai.png'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import Link from "next/link";
-import Image from "next/image";
-import { RiInformationFill } from "react-icons/ri";
+} from '@/components/ui/tooltip'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import Link from 'next/link'
+import Image from 'next/image'
+import { RiInformationFill } from 'react-icons/ri'
 
 interface TriggerFormProps {
-  stakeholder: Stakeholder;
-  onBack: () => void;
+  stakeholder: Stakeholder
+  onBack: () => void
 }
 
 type TriggerFormValues = {
-  roleType: string;
-  painPoint: string;
-  benefits: string;
-  triggerEvaluation: string;
-  objectionsConcerns: string;
-  objectionHandling: string;
-  callToAction: string;
-};
+  roleType: string
+  painPoint: string
+  benefits: string
+  triggerEvaluation: string
+  objectionsConcerns: string
+  objectionHandling: string
+  callToAction: string
+}
 
 export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
-  const session = useSession();
-  const token = (session?.data?.user as { accessToken?: string })?.accessToken;
-  const queryClient = useQueryClient();
+  const session = useSession()
+  const token = (session?.data?.user as { accessToken?: string })?.accessToken
+  const queryClient = useQueryClient()
 
   // Use the same helpText fetching logic based on global language/cookie if needed
-  const { data: systemSettings } = useSystemSettings();
+  const { data: systemSettings } = useSystemSettings()
 
   console.log(systemSettings)
 
-  const getHelpText = (name: string) => {
-    const helptexts = systemSettings?.helpTexts || [];
+  // const getHelpText = (name: string) => {
+  //   const helptexts = systemSettings?.helpTexts || [];
 
-    const help = helptexts.find(
-      (h: { name: string; values?: { en?: string } }) => h.name === name,
-    );
-    return help?.values?.en || "";
-  };
-
-
-
+  //   const help = helptexts.find(
+  //     (h: { name: string; values?: { en?: string } }) => h.name === name,
+  //   );
+  //   return help?.values?.en || "";
+  // };
 
   const { register, handleSubmit, setValue, watch } =
     useForm<TriggerFormValues>({
       defaultValues: {
-        roleType: stakeholder.roleType || "",
-        painPoint: stakeholder.painPoint || "",
-        benefits: stakeholder.benefits || "",
-        triggerEvaluation: stakeholder.triggerEvaluation || "",
-        objectionsConcerns: stakeholder.objectionsConcerns || "",
-        objectionHandling: stakeholder.objectionHandling || "",
-        callToAction: stakeholder.callToAction || "",
+        roleType: stakeholder.roleType || '',
+        painPoint: stakeholder.painPoint || '',
+        benefits: stakeholder.benefits || '',
+        triggerEvaluation: stakeholder.triggerEvaluation || '',
+        objectionsConcerns: stakeholder.objectionsConcerns || '',
+        objectionHandling: stakeholder.objectionHandling || '',
+        callToAction: stakeholder.callToAction || '',
       },
-    });
+    })
 
-  const roleValue = watch("roleType");
-  const triggerEvalValue = watch("triggerEvaluation");
+  const roleValue = watch('roleType')
+  const triggerEvalValue = watch('triggerEvaluation')
 
   const updateMutation = useMutation({
     mutationFn: async (values: TriggerFormValues) => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/stakeholder/single/${stakeholder._id}`,
         {
-          method: "PUT",
+          method: 'PUT',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(values),
         },
-      );
-      if (!res.ok) throw new Error("Failed to update trigger info");
-      return res.json();
+      )
+      if (!res.ok) throw new Error('Failed to update trigger info')
+      return res.json()
     },
     onSuccess: () => {
-      toast.success("Trigger info saved successfully");
+      toast.success('Trigger info saved successfully')
       queryClient.invalidateQueries({
-        queryKey: ["stakeholders", stakeholder.insightEngineId],
-      });
-      onBack();
+        queryKey: ['stakeholders', stakeholder.insightEngineId],
+      })
+      onBack()
     },
     onError: (err: Error) => {
-      toast.error(err.message || "Something went wrong");
+      toast.error(err.message || 'Something went wrong')
     },
-  });
+  })
 
   const onSubmit = (values: TriggerFormValues) => {
-    updateMutation.mutate(values);
-  };
+    updateMutation.mutate(values)
+  }
 
-  const roleTypes = systemSettings?.roleTypes || [];
+  const roleTypes = systemSettings?.roleTypes || []
 
   return (
     <div className="w-full space-y-8 pb-10">
@@ -131,13 +129,13 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <label className="text-[20px] font-medium text-[#00253E]">Role</label>
           <Select
             value={roleValue}
-            onValueChange={(v) => setValue("roleType", v)}
+            onValueChange={v => setValue('roleType', v)}
           >
             <SelectTrigger className="w-[280px] !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[54px] text-[#00253E] font-normal leading-[110%] text-lg md:text-xl">
               <SelectValue placeholder="Select Type" />
             </SelectTrigger>
             <SelectContent className="bg-white">
-              {roleTypes.map((r) => (
+              {roleTypes.map(r => (
                 <SelectItem key={r.name} value={r.name}>
                   {r.name}
                 </SelectItem>
@@ -153,10 +151,10 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <label className="text-[20px] font-medium text-[#00253E]">
               Pain point
             </label>
-            <HelpIcon text={getHelpText("Pain point")} />
+            {/* <HelpIcon text={getHelpText("Pain point")} /> */}
           </div>
           <Textarea
-            {...register("painPoint")}
+            {...register('painPoint')}
             placeholder="What's their Pain point?"
             className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
@@ -169,10 +167,10 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <label className="text-[20px] font-medium text-[#00253E]">
               Benefits
             </label>
-            <HelpIcon text={getHelpText("Benefits")} />
+            {/* <HelpIcon text={getHelpText("Benefits")} /> */}
           </div>
           <Textarea
-            {...register("benefits")}
+            {...register('benefits')}
             placeholder="What's benefits they will get"
             className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
@@ -185,7 +183,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
           <RadioGroup
             className="h-[54px] w-[300px] flex gap-6 border border-primary rounded-[8px] px-4"
             value={triggerEvalValue}
-            onValueChange={(v: string) => setValue("triggerEvaluation", v)}
+            onValueChange={(v: string) => setValue('triggerEvaluation', v)}
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem
@@ -230,10 +228,10 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <label className="text-[20px] font-medium text-[#00253E]">
               Objections / Concerns
             </label>
-            <HelpIcon text={getHelpText("Objections/Concerns")} />
+            {/* <HelpIcon text={getHelpText("Objections/Concerns")} /> */}
           </div>
           <Textarea
-            {...register("objectionsConcerns")}
+            {...register('objectionsConcerns')}
             placeholder="What are their concerns?"
             className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
@@ -246,41 +244,39 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <label className="text-[20px] font-medium text-[#00253E]">
               Objection Handling
             </label>
-            <HelpIcon text={getHelpText("Objection Handling")} />
+            {/* <HelpIcon text={getHelpText("Objection Handling")} /> */}
           </div>
           <Textarea
-            {...register("objectionHandling")}
+            {...register('objectionHandling')}
             placeholder="How will you address their concerns?"
             className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
-           {/* call to action Handling */}
+        {/* call to action Handling */}
         <div className="space-y-3 ">
           <div className="flex items-center gap-2">
             <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
             <label className="text-[20px] font-medium text-[#00253E]">
               Call to Action
             </label>
-            <HelpIcon text={getHelpText("callToAction")} />
+            {/* <HelpIcon text={getHelpText("callToAction")} /> */}
           </div>
           <Textarea
-            {...register("callToAction")}
+            {...register('callToAction')}
             placeholder="How will you address their concerns?"
             className="w-full !rounded-[8px] border border-[#00253E] px-4 py-3 min-h-[90px] text-[#00253E] placeholder:text-[#616161] font-normal leading-[110%] text-lg md:text-xl"
           />
         </div>
 
         <div className="w-full flex items-center justify-end">
-          <Link
-            href={`/participants/insight-engine/trigger-ai`}
-          >
+          <Link href={`/participants/insight-engine/trigger-ai`}>
             <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white notranslate leading-[110%] font-medium">
               <Image
                 src={aiIcon}
                 alt="AI Icon"
                 className="w-5 h-5 mr-2 object-contain"
-              />{" "}
+              />{' '}
               AI <ChevronsRight className="w-5 h-5" />
             </button>
           </Link>
@@ -302,36 +298,34 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             disabled={updateMutation.isPending}
             className="bg-[#B5CC2E] hover:bg-[#A3B829] text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold transition-all duration-200"
           >
-            {updateMutation.isPending ? "Saving..." : "Save"}
+            {updateMutation.isPending ? 'Saving...' : 'Save'}
           </Button>
         </div>
       </form>
     </div>
-  );
+  )
 }
 
-
-
 function HelpIcon({ text }: { text: string }) {
-  if (!text) return null;
+  if (!text) return null
 
   // Handle both bullets "•" and line breaks "\n"
-  const normalized = text.replace(/\r\n/g, "\n").trim();
+  const normalized = text.replace(/\r\n/g, '\n').trim()
 
   // Split by bullet symbol
   const parts = normalized
-    .split("•")
-    .map((s) => s.trim())
-    .filter(Boolean);
+    .split('•')
+    .map(s => s.trim())
+    .filter(Boolean)
 
-  const hasBullets = parts.length > 1;
+  const hasBullets = parts.length > 1
 
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" className="outline-none">
-             <RiInformationFill className="w-5 h-5 text-[#00253E] cursor-pointer" />
+            <RiInformationFill className="w-5 h-5 text-[#00253E] cursor-pointer" />
           </button>
         </TooltipTrigger>
 
@@ -340,7 +334,7 @@ function HelpIcon({ text }: { text: string }) {
           align="start"
           sideOffset={8}
           // ✅ Force wrap (Radix tooltip uses nowrap by default sometimes)
-          style={{ whiteSpace: "normal" }}
+          style={{ whiteSpace: 'normal' }}
           className="max-w-xl lg:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl bg-[#00253E] text-white p-3 rounded-[4px] shadow-2xl border-t-4 border-primary animate-in fade-in slide-in-from-bottom-2"
         >
           <div className="flex gap-3">
@@ -349,16 +343,17 @@ function HelpIcon({ text }: { text: string }) {
             {hasBullets ? (
               <div className="text-[14px] leading-relaxed whitespace-normal break-words">
                 {/* Intro text before first bullet */}
-                <p className="mb-2 whitespace-normal break-words">
-                  {parts[0]}
-                </p>
+                <p className="mb-2 whitespace-normal break-words">{parts[0]}</p>
 
                 <ul className="list-disc pl-5 space-y-1">
                   {parts.slice(1).map((item, idx) => (
                     <li
                       key={idx}
                       className="whitespace-normal break-words"
-                      style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
+                      style={{
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'break-word',
+                      }}
                     >
                       {item}
                     </li>
@@ -368,7 +363,7 @@ function HelpIcon({ text }: { text: string }) {
             ) : (
               <p
                 className="text-[14px] leading-relaxed whitespace-pre-wrap break-words"
-                style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
+                style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
               >
                 {normalized}
               </p>
@@ -377,5 +372,5 @@ function HelpIcon({ text }: { text: string }) {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  );
+  )
 }
