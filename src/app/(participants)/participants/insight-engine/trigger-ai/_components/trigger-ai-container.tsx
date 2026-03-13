@@ -109,9 +109,7 @@ ${details}
     // Strip HTML tags for clipboard
     const plainText = htmlText.replace(/<[^>]+>/g, '')
     await navigator.clipboard.writeText(plainText)
-    toast.success(
-      'Trigger AI Prompt copied successfully! (Plain text formatting)',
-    )
+    toast.success('Trigger AI Prompt copied successfully!')
   }
 
   if (isLoading) {
@@ -174,15 +172,21 @@ ${details}
           <div className="flex gap-2">
             <button
               onClick={() => setLanguage('en')}
-              className={`px-3 py-1 rounded-md text-sm font-medium ${language === 'en' ? 'bg-[#BADA55] text-[#00253E]' : 'bg-gray-200 text-[#00253E]'
-                }`}
+              className={`px-3 py-1 rounded-md text-sm font-medium ${
+                language === 'en'
+                  ? 'bg-[#BADA55] text-[#00253E]'
+                  : 'bg-gray-200 text-[#00253E]'
+              }`}
             >
               EN
             </button>
             <button
               onClick={() => setLanguage('de')}
-              className={`px-3 py-1 rounded-md text-sm font-medium ${language === 'de' ? 'bg-[#BADA55] text-[#00253E]' : 'bg-gray-200 text-[#00253E]'
-                }`}
+              className={`px-3 py-1 rounded-md text-sm font-medium ${
+                language === 'de'
+                  ? 'bg-[#BADA55] text-[#00253E]'
+                  : 'bg-gray-200 text-[#00253E]'
+              }`}
             >
               DE
             </button>
