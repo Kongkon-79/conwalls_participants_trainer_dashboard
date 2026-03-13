@@ -1,20 +1,3 @@
-// export interface HelpTextValue {
-//   de: string
-//   en: string
-// }
-
-// export interface HelpTextItem {
-//   name: string
-//   values: HelpTextValue
-// }
-
-// export interface HelpTextApiResponse {
-//   status: boolean
-//   message: string
-//   data: HelpTextItem[]
-// }
-
-
 export type Language = "en" | "de"
 
 export interface FilteredHelpTextItem {
@@ -26,4 +9,22 @@ export interface FilteredHelpTextsResponse {
   status: boolean
   message: string
   data: FilteredHelpTextItem[]
+}
+
+export interface TriggerAiPromptItem {
+  name: string
+  values: Record<Language, string>
+}
+
+export interface SystemSettingsType {
+  _id: string
+  triggerAiPrompt?: TriggerAiPromptItem[]
+}
+
+export interface SystemSettingsResponse {
+  status: boolean
+  message: string
+  data: {
+    items: SystemSettingsType[]
+  }
 }
