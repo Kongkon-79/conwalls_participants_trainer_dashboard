@@ -1,4 +1,7 @@
+
 /* eslint-disable react-hooks/exhaustive-deps */
+
+
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +24,7 @@ const KickOffStoryAiContainer = () => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/system-setting/69a155d6581efd8db0fe3bed`
       );
+
       if (!res.ok) throw new Error("Failed to fetch data");
       return res.json();
     },
@@ -32,54 +36,132 @@ const KickOffStoryAiContainer = () => {
     (item) => item.name === selectedType
   );
 
-  /* Static content with headings bold and values normal */
   const staticContent = {
-    de: [
-      { heading: "Zielgruppe:", value: "Mitarbeiter" },
-      { heading: "Projekt:", value: "Confluence" },
-      { heading: "Vision", value: "Ein neues Intranet, das individuell gepflegt werden kann" },
-      { heading: "Vergangenheit", value: "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat" },
-      { heading: "Hindernis / Problem", value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden" },
-      { heading: "Risikobei Nicht-Handeln / Konsequenszen", value: "Die zentrale Intranet Abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt." },
-      { heading: "Lösung / Idee", value: "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann" },
-      { heading: "Pain Points", value: "Müssen neues Programm lernen, Neuer Mehraufwand" },
-      { heading: "Benefits", value: "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen" },
-      { heading: "Bedenken / Einwände", value: "Neues Software ist nicht bekannt. Angst vor versagen" },
-      { heading: "Einwandbehandlung", value: "Testing Snipsel" },
-      { heading: "Call to Action", value: "Werde Ambassador" },
-    ],
-    en: [
-      { heading: "Stakeholder:", value: "Mitarbeiter" },
-      { heading: "Project:", value: "Confluence" },
-      { heading: "Vision", value: "Ein neues Intranet, das individuell gepflegt werden kann" },
-      { heading: "The past (good old days)", value: "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat" },
-      { heading: "Obstacle / Problem", value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden" },
-      { heading: "Risk of inaction / Consequences", value: "Die zentrale Intranet abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt." },
-      { heading: "Solution / Idea", value: "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann" },
-      { heading: "Pain Point", value: "Müssen neues Programm lernen, Neuer Mehraufwand" },
-      { heading: "Benefits", value: "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen" },
-      { heading: "Objections / Concerns", value: "Neues Software ist nicht bekannt. Angst vor versagen" },
-      { heading: "Objection Handling", value: "Testing Snipsel" },
-      { heading: "Call to Action", value: "Werde Ambassador" },
-    ],
+    de: {
+      intro:
+        "Erstellen Sie eine Präsentation mit 8 Folien, für die nachfolgende genannte Zielgruppe bzw. des nachfolgend genannten Projektes die auf der folgenden Storyline basiert. Erstellen Sie für jeden Schritt der Story eine Folie: Schritte: 1. Vision, 2. Relevanz, 3. Hindernis, 4. Gefahr, 5. Idee, 6. Einwand, 7. Umgang mit Einwänden, 8. Aktion. Entwickeln Sie eine kreative Überschrift. Erstellen Sie für jede Folie eine moderne, kreative Visualisierung. Ergänzen Sie die Punkte mit den nachfolgenden Informationen und mit zusätzlichen Informationen aus dem Internet.",
+      fields: [
+        { heading: "Zielgruppe:", value: "Mitarbeiter" },
+        { heading: "Projekt:", value: "Confluence" },
+        {
+          heading: "Vision",
+          value: "Ein neues Intranet, das individuell gepflegt werden kann",
+        },
+        {
+          heading: "Vergangenheit",
+          value:
+            "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat",
+        },
+        {
+          heading: "Hindernis / Problem",
+          value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden",
+        },
+        {
+          heading: "Risikobei Nicht-Handeln / Konsequenszen",
+          value:
+            "Die zentrale Intranet Abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt.",
+        },
+        {
+          heading: "Lösung / Idee",
+          value:
+            "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann",
+        },
+        {
+          heading: "Pain Points",
+          value: "Müssen neues Programm lernen, Neuer Mehraufwand",
+        },
+        {
+          heading: "Benefits",
+          value:
+            "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen",
+        },
+        {
+          heading: "Bedenken / Einwände",
+          value: "Neues Software ist nicht bekannt. Angst vor versagen",
+        },
+        {
+          heading: "Einwandbehandlung",
+          value: "Testing Snipsel",
+        },
+        {
+          heading: "Call to Action",
+          value: "Werde Ambassador",
+        },
+      ],
+    },
+    en: {
+      intro:
+        "Create an 8-slide presentation for the target audience or project specified below, based on the following storyline. Create one slide for each step of the story: Steps: 1. Vision, 2. Relevance, 3. Obstacle, 4. Danger, 5. Idea, 6. Objection, 7. Dealing with objections, 8. Action. Develop a creative headline. Create a modern, creative visualisation for each slide. Supplement the points with the following information and additional information from the internet.",
+      fields: [
+        { heading: "Stakeholder:", value: "Mitarbeiter" },
+        { heading: "Project:", value: "Confluence" },
+        {
+          heading: "Vision",
+          value: "Ein neues Intranet, das individuell gepflegt werden kann",
+        },
+        {
+          heading: "The past (good old days)",
+          value:
+            "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat",
+        },
+        {
+          heading: "Obstacle / Problem",
+          value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden",
+        },
+        {
+          heading: "Risk of inaction / Consequences",
+          value:
+            "Die zentrale Intranet abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt.",
+        },
+        {
+          heading: "Solution / Idea",
+          value:
+            "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann",
+        },
+        {
+          heading: "Pain Point",
+          value: "Müssen neues Programm lernen, Neuer Mehraufwand",
+        },
+        {
+          heading: "Benefits",
+          value:
+            "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen",
+        },
+        {
+          heading: "Objections / Concerns",
+          value: "Neues Software ist nicht bekannt. Angst vor versagen",
+        },
+        {
+          heading: "Objection Handling",
+          value: "Testing Snipsel",
+        },
+        {
+          heading: "Call to Action",
+          value: "Werde Ambassador",
+        },
+      ],
+    },
   };
 
-  const handleCopy = async () => {
-    if (!filteredMeasureTypes.length) return;
+const handleCopy = async () => {
+  if (!filteredMeasureTypes.length) return;
 
-    const dynamicPart = `${filteredMeasureTypes[0].name} : ${
-      filteredMeasureTypes[0].values?.[language] ?? ""
-    }`;
+  const introText = staticContent[language].intro;
 
-    const staticPart = staticContent[language]
-      .map((item) => `${item.heading} ${item.value}`)
-      .join("\n\n");
+  const dynamicPart = `${filteredMeasureTypes[0].name}:\n${
+    filteredMeasureTypes[0].values?.[language] ?? ""
+  }`;
 
-    const textToCopy = `${dynamicPart}\n\n${staticPart}`;
+  const staticPart = staticContent[language].fields
+    .map((item) => `${item.heading}\n${item.value}`)
+    .join("\n\n");
 
-    await navigator.clipboard.writeText(textToCopy);
-    toast.success("Prompt copied successfully!");
-  };
+  // Dynamic data first
+  const textToCopy = `${dynamicPart}\n\n${introText}\n\n${staticPart}`;
+
+  await navigator.clipboard.writeText(textToCopy);
+  toast.success("Prompt copied successfully!");
+};
 
   if (isLoading) {
     return (
@@ -119,7 +201,7 @@ const KickOffStoryAiContainer = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl md:text-3xl lg:text-4xl text-[#00253E] leading-[110%] font-semibold">
             <Image
@@ -141,7 +223,7 @@ const KickOffStoryAiContainer = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setLanguage("en")}
-            className={`px-3 py-1 rounded-md text-sm ${
+            className={`px-3 py-1 rounded-md text-sm transition ${
               language === "en" ? "bg-green-500 text-white" : "bg-gray-200"
             }`}
           >
@@ -149,7 +231,7 @@ const KickOffStoryAiContainer = () => {
           </button>
           <button
             onClick={() => setLanguage("de")}
-            className={`px-3 py-1 rounded-md text-sm ${
+            className={`px-3 py-1 rounded-md text-sm transition ${
               language === "de" ? "bg-green-500 text-white" : "bg-gray-200"
             }`}
           >
@@ -163,28 +245,39 @@ const KickOffStoryAiContainer = () => {
         {filteredMeasureTypes.length === 0 ? (
           <p className="text-sm text-gray-600">No data found for this type.</p>
         ) : (
-          <div className="space-y-4">
-            <div className="flex flex-col gap-2">
-              <h4 className="font-bold text-[#00253E]">
-                {filteredMeasureTypes[0].name} :
-              </h4>
-              <p className="text-sm md:text-base text-[#00253E]">
+          <div className="space-y-5">
+            {/* Dynamic content */}
+            <div className="flex flex-col gap-1 border-b border-primary pb-8">
+              <span className="font-bold text-[#00253E]">
+                {filteredMeasureTypes[0].name}:
+              </span>
+              <span className="font-normal text-sm md:text-base text-[#00253E] whitespace-pre-line">
                 {filteredMeasureTypes[0].values?.[language] ?? ""}
-              </p>
-
-              {staticContent[language].map((item, idx) => (
-                <div key={idx} className="flex flex-col gap-1">
-                  <span className="font-bold">{item.heading}</span>
-                  <span className="font-normal">{item.value}</span>
-                </div>
-              ))}
+              </span>
             </div>
+
+            {/* Intro prompt */}
+            <p className="text-sm md:text-base text-[#00253E] leading-7 whitespace-pre-line">
+              {staticContent[language].intro}
+            </p>
+
+            
+
+            {/* Static fields */}
+            {staticContent[language].fields.map((item, idx) => (
+              <div key={idx} className="flex flex-col gap-1">
+                <span className="font-bold text-[#00253E]">{item.heading}</span>
+                <span className="font-normal text-sm md:text-base text-[#00253E] whitespace-pre-line">
+                  {item.value}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       {/* Buttons */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 flex-wrap">
         <button
           type="button"
           onClick={() => window.history.back()}
@@ -196,7 +289,8 @@ const KickOffStoryAiContainer = () => {
 
         <button
           onClick={handleCopy}
-          className="h-[50px] flex items-center gap-2 bg-primary px-8 py-4 rounded-[8px]"
+          disabled={!filteredMeasureTypes.length}
+          className="h-[50px] flex items-center gap-2 bg-primary px-8 py-4 rounded-[8px] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Copy className="h-4 w-4" />
           Copy Prompt
@@ -218,9 +312,14 @@ export default KickOffStoryAiContainer;
 
 
 
+
+
+
+
+
+
 // second version 
 
-// /* eslint-disable react-hooks/exhaustive-deps */
 // "use client";
 
 // import { useQuery } from "@tanstack/react-query";
@@ -250,18 +349,54 @@ export default KickOffStoryAiContainer;
 
 //   const measureTypes = data?.data?.measureTypes || [];
 
-//   /* Filter only selected type */
 //   const filteredMeasureTypes = measureTypes.filter(
 //     (item) => item.name === selectedType
 //   );
 
-//   /* Copy Prompt ONLY selected type */
+//   /* Static content with headings bold and values normal */
+//   const staticContent = {
+//     de: [
+//       { heading: "Zielgruppe:", value: "Mitarbeiter" },
+//       { heading: "Projekt:", value: "Confluence" },
+//       { heading: "Vision", value: "Ein neues Intranet, das individuell gepflegt werden kann" },
+//       { heading: "Vergangenheit", value: "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat" },
+//       { heading: "Hindernis / Problem", value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden" },
+//       { heading: "Risikobei Nicht-Handeln / Konsequenszen", value: "Die zentrale Intranet Abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt." },
+//       { heading: "Lösung / Idee", value: "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann" },
+//       { heading: "Pain Points", value: "Müssen neues Programm lernen, Neuer Mehraufwand" },
+//       { heading: "Benefits", value: "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen" },
+//       { heading: "Bedenken / Einwände", value: "Neues Software ist nicht bekannt. Angst vor versagen" },
+//       { heading: "Einwandbehandlung", value: "Testing Snipsel" },
+//       { heading: "Call to Action", value: "Werde Ambassador" },
+//     ],
+//     en: [
+//       { heading: "Stakeholder:", value: "Mitarbeiter" },
+//       { heading: "Project:", value: "Confluence" },
+//       { heading: "Vision", value: "Ein neues Intranet, das individuell gepflegt werden kann" },
+//       { heading: "The past (good old days)", value: "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat" },
+//       { heading: "Obstacle / Problem", value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden" },
+//       { heading: "Risk of inaction / Consequences", value: "Die zentrale Intranet abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt." },
+//       { heading: "Solution / Idea", value: "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann" },
+//       { heading: "Pain Point", value: "Müssen neues Programm lernen, Neuer Mehraufwand" },
+//       { heading: "Benefits", value: "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen" },
+//       { heading: "Objections / Concerns", value: "Neues Software ist nicht bekannt. Angst vor versagen" },
+//       { heading: "Objection Handling", value: "Testing Snipsel" },
+//       { heading: "Call to Action", value: "Werde Ambassador" },
+//     ],
+//   };
+
 //   const handleCopy = async () => {
 //     if (!filteredMeasureTypes.length) return;
 
-//     const textToCopy = `${filteredMeasureTypes[0].name} : ${
+//     const dynamicPart = `${filteredMeasureTypes[0].name} : ${
 //       filteredMeasureTypes[0].values?.[language] ?? ""
 //     }`;
+
+//     const staticPart = staticContent[language]
+//       .map((item) => `${item.heading} ${item.value}`)
+//       .join("\n\n");
+
+//     const textToCopy = `${dynamicPart}\n\n${staticPart}`;
 
 //     await navigator.clipboard.writeText(textToCopy);
 //     toast.success("Prompt copied successfully!");
@@ -347,18 +482,23 @@ export default KickOffStoryAiContainer;
 //       {/* Prompt Box */}
 //       <div className="bg-[#EDEDED] border-l-[4px] border-[#BADA55] rounded-xl p-8 space-y-6">
 //         {filteredMeasureTypes.length === 0 ? (
-//           <p className="text-sm text-gray-600">
-//             No data found for this type.
-//           </p>
+//           <p className="text-sm text-gray-600">No data found for this type.</p>
 //         ) : (
 //           <div className="space-y-4">
-//             <div className="flex items-center gap-2">
+//             <div className="flex flex-col gap-2">
 //               <h4 className="font-bold text-[#00253E]">
 //                 {filteredMeasureTypes[0].name} :
 //               </h4>
 //               <p className="text-sm md:text-base text-[#00253E]">
 //                 {filteredMeasureTypes[0].values?.[language] ?? ""}
 //               </p>
+
+//               {staticContent[language].map((item, idx) => (
+//                 <div key={idx} className="flex flex-col gap-1">
+//                   <span className="font-bold">{item.heading}</span>
+//                   <span className="font-normal">{item.value}</span>
+//                 </div>
+//               ))}
 //             </div>
 //           </div>
 //         )}
@@ -388,6 +528,8 @@ export default KickOffStoryAiContainer;
 // };
 
 // export default KickOffStoryAiContainer;
+
+
 
 
 
