@@ -1,4 +1,3 @@
-
 /* eslint-disable react-hooks/exhaustive-deps */
 
 
@@ -6,19 +5,32 @@
 
 import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { AiApiResponse } from "./kick-off-story-ai-data-type";
 import Image from "next/image";
 import ai_prompt_image from "../../../../../../../public/assets/images/ai_prompt.png";
 import { toast } from "sonner";
 import { ChevronsLeft, Copy } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+
+import { AiApiResponse } from "./kick-off-story-ai-data-type";
+import { ProjectsApiResponse } from "./project-data-type";
+import { StakeholderApiResponse } from "./stakeholder-data-type";
 
 const KickOffStoryAiContainer = () => {
-  const [language, setLanguage] = useState<"en" | "de">("en");
-  const searchParams = useSearchParams();
-  const selectedType = searchParams.get("type");
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
 
-  const { data, isLoading, isError } = useQuery<AiApiResponse>({
+  const [language, setLanguage] = useState<"en" | "de">("en");
+
+  const searchParams = useSearchParams();
+
+  const selectedType = searchParams.get("type");
+  const projectId = searchParams.get("projectId");
+  const stakeholderId = searchParams.get("stakeholderId");
+
+  /* ---------------- AI PROMPT ---------------- */
+
+  const { data } = useQuery<AiApiResponse>({
     queryKey: ["kickOffStory-ai"],
     queryFn: async () => {
       const res = await fetch(
@@ -26,213 +38,156 @@ const KickOffStoryAiContainer = () => {
       );
 
       if (!res.ok) throw new Error("Failed to fetch data");
+
       return res.json();
     },
   });
 
   const measureTypes = data?.data?.measureTypes || [];
 
-  const filteredMeasureTypes = measureTypes.filter(
+  const filteredMeasureTypes = measureTypes.find(
     (item) => item.name === selectedType
   );
 
-  const staticContent = {
-    de: {
-      intro:
-        "Erstellen Sie eine Präsentation mit 8 Folien, für die nachfolgende genannte Zielgruppe bzw. des nachfolgend genannten Projektes die auf der folgenden Storyline basiert. Erstellen Sie für jeden Schritt der Story eine Folie: Schritte: 1. Vision, 2. Relevanz, 3. Hindernis, 4. Gefahr, 5. Idee, 6. Einwand, 7. Umgang mit Einwänden, 8. Aktion. Entwickeln Sie eine kreative Überschrift. Erstellen Sie für jede Folie eine moderne, kreative Visualisierung. Ergänzen Sie die Punkte mit den nachfolgenden Informationen und mit zusätzlichen Informationen aus dem Internet.",
-      fields: [
-        { heading: "Zielgruppe:", value: "Mitarbeiter" },
-        { heading: "Projekt:", value: "Confluence" },
+  /* ---------------- PROJECT DATA ---------------- */
+
+  const { data: projectData } = useQuery<ProjectsApiResponse>({
+    queryKey: ["project-data", projectId],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/insight-engine/${projectId}`,
         {
-          heading: "Vision",
-          value: "Ein neues Intranet, das individuell gepflegt werden kann",
-        },
-        {
-          heading: "Vergangenheit",
-          value:
-            "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat",
-        },
-        {
-          heading: "Hindernis / Problem",
-          value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden",
-        },
-        {
-          heading: "Risikobei Nicht-Handeln / Konsequenszen",
-          value:
-            "Die zentrale Intranet Abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt.",
-        },
-        {
-          heading: "Lösung / Idee",
-          value:
-            "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann",
-        },
-        {
-          heading: "Pain Points",
-          value: "Müssen neues Programm lernen, Neuer Mehraufwand",
-        },
-        {
-          heading: "Benefits",
-          value:
-            "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen",
-        },
-        {
-          heading: "Bedenken / Einwände",
-          value: "Neues Software ist nicht bekannt. Angst vor versagen",
-        },
-        {
-          heading: "Einwandbehandlung",
-          value: "Testing Snipsel",
-        },
-        {
-          heading: "Call to Action",
-          value: "Werde Ambassador",
-        },
-      ],
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch project");
+
+      return res.json();
     },
-    en: {
-      intro:
-        "Create an 8-slide presentation for the target audience or project specified below, based on the following storyline. Create one slide for each step of the story: Steps: 1. Vision, 2. Relevance, 3. Obstacle, 4. Danger, 5. Idea, 6. Objection, 7. Dealing with objections, 8. Action. Develop a creative headline. Create a modern, creative visualisation for each slide. Supplement the points with the following information and additional information from the internet.",
-      fields: [
-        { heading: "Stakeholder:", value: "Mitarbeiter" },
-        { heading: "Project:", value: "Confluence" },
+    enabled: !!token && !!projectId,
+  });
+
+  /* ---------------- STAKEHOLDER DATA ---------------- */
+
+  const { data: stakeholderData } = useQuery<StakeholderApiResponse>({
+    queryKey: ["stakeholder-data", stakeholderId],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/stakeholder/single/${stakeholderId}`,
         {
-          heading: "Vision",
-          value: "Ein neues Intranet, das individuell gepflegt werden kann",
-        },
-        {
-          heading: "The past (good old days)",
-          value:
-            "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat",
-        },
-        {
-          heading: "Obstacle / Problem",
-          value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden",
-        },
-        {
-          heading: "Risk of inaction / Consequences",
-          value:
-            "Die zentrale Intranet abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt.",
-        },
-        {
-          heading: "Solution / Idea",
-          value:
-            "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann",
-        },
-        {
-          heading: "Pain Point",
-          value: "Müssen neues Programm lernen, Neuer Mehraufwand",
-        },
-        {
-          heading: "Benefits",
-          value:
-            "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen",
-        },
-        {
-          heading: "Objections / Concerns",
-          value: "Neues Software ist nicht bekannt. Angst vor versagen",
-        },
-        {
-          heading: "Objection Handling",
-          value: "Testing Snipsel",
-        },
-        {
-          heading: "Call to Action",
-          value: "Werde Ambassador",
-        },
-      ],
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch stakeholder");
+
+      return res.json();
     },
+    enabled: !!token && !!stakeholderId,
+  });
+
+  /* ---------------- COPY PROMPT ---------------- */
+
+  const handleCopy = async () => {
+    const stakeholder = stakeholderData?.data;
+    const project = projectData?.data;
+    const systemForms = project?.systemForms;
+
+    const aiPrompt = filteredMeasureTypes?.values?.[language] ?? "";
+
+    const textToCopy = `
+${filteredMeasureTypes?.name}
+${aiPrompt}
+
+Stakeholder:
+${stakeholder?.name}
+
+Project:
+${project?.projectTitle}
+
+Vision
+${systemForms?.vision}
+
+The past (good old days)
+${systemForms?.pastGoodOldDays}
+
+Obstacle / Problem
+${systemForms?.obstacleProblem}
+
+Risk of inaction / Consequences
+${systemForms?.riskOfInaction}
+
+Solution / Idea
+${systemForms?.solutionIdea}
+
+Pain Point
+${stakeholder?.painPoint}
+
+Benefits
+${stakeholder?.benefits}
+
+Objections / Concerns
+${stakeholder?.objectionsConcerns}
+
+Objection Handling
+${stakeholder?.objectionHandling}
+
+Call to Action
+${stakeholder?.callToAction}
+`;
+
+    await navigator.clipboard.writeText(textToCopy);
+
+    toast.success("Prompt copied successfully!");
   };
-
-const handleCopy = async () => {
-  if (!filteredMeasureTypes.length) return;
-
-  const introText = staticContent[language].intro;
-
-  const dynamicPart = `${filteredMeasureTypes[0].name}:\n${
-    filteredMeasureTypes[0].values?.[language] ?? ""
-  }`;
-
-  const staticPart = staticContent[language].fields
-    .map((item) => `${item.heading}\n${item.value}`)
-    .join("\n\n");
-
-  // Dynamic data first
-  const textToCopy = `${dynamicPart}\n\n${introText}\n\n${staticPart}`;
-
-  await navigator.clipboard.writeText(textToCopy);
-  toast.success("Prompt copied successfully!");
-};
-
-  if (isLoading) {
-    return (
-      <div className="p-6 space-y-6 animate-pulse">
-        <div className="h-6 w-48 bg-gray-300 rounded-md" />
-        <div className="bg-gray-100 border rounded-lg p-6 space-y-4">
-          <div className="h-4 bg-gray-300 rounded w-full" />
-          <div className="h-4 bg-gray-300 rounded w-5/6" />
-          <div className="h-4 bg-gray-300 rounded w-4/6" />
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="p-6">
-        <div className="border border-red-200 bg-red-50 rounded-lg p-6 text-center space-y-4">
-          <div className="text-red-600 text-3xl">⚠️</div>
-          <h2 className="text-lg font-semibold text-red-700">
-            Failed to Load Data
-          </h2>
-          <p className="text-sm text-red-600">
-            We couldn’t fetch the measure types. Please try again.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center gap-4 flex-wrap">
+      {/* HEADER */}
+
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl lg:text-4xl text-[#00253E] leading-[110%] font-semibold">
+          <h1 className="text-3xl font-semibold text-[#00253E]">
             <Image
               src={ai_prompt_image}
               width={32}
               height={32}
-              alt="Kick Off Story Icon"
+              alt="ai"
               className="inline mr-2"
             />
             Kick Off Story
           </h1>
 
-          <p className="text-base md:text-lg lg:text-xl text-[#00253E] leading-[110%] pt-4">
-            Final Prompt (Ready to copy)
+          <p className="text-lg text-[#00253E] mt-2">
+            Final Prompt
           </p>
         </div>
 
-        {/* Language Toggle */}
+        {/* LANGUAGE SWITCH */}
+
         <div className="flex gap-2">
           <button
             onClick={() => setLanguage("en")}
-            className={`px-3 py-1 rounded-md text-sm transition ${
-              language === "en" ? "bg-green-500 text-white" : "bg-gray-200"
+            className={`px-3 py-1 rounded ${
+              language === "en"
+                ? "bg-green-500 text-white"
+                : "bg-gray-200"
             }`}
           >
             EN
           </button>
+
           <button
             onClick={() => setLanguage("de")}
-            className={`px-3 py-1 rounded-md text-sm transition ${
-              language === "de" ? "bg-green-500 text-white" : "bg-gray-200"
+            className={`px-3 py-1 rounded ${
+              language === "de"
+                ? "bg-green-500 text-white"
+                : "bg-gray-200"
             }`}
           >
             DE
@@ -240,59 +195,147 @@ const handleCopy = async () => {
         </div>
       </div>
 
-      {/* Prompt Box */}
-      <div className="bg-[#EDEDED] border-l-[4px] border-[#BADA55] rounded-xl p-8 space-y-6">
-        {filteredMeasureTypes.length === 0 ? (
-          <p className="text-sm text-gray-600">No data found for this type.</p>
-        ) : (
-          <div className="space-y-5">
-            {/* Dynamic content */}
-            <div className="flex flex-col gap-1 border-b border-primary pb-8">
-              <span className="font-bold text-[#00253E]">
-                {filteredMeasureTypes[0].name}:
-              </span>
-              <span className="font-normal text-sm md:text-base text-[#00253E] whitespace-pre-line">
-                {filteredMeasureTypes[0].values?.[language] ?? ""}
-              </span>
-            </div>
+      {/* PROMPT BOX */}
 
-            {/* Intro prompt */}
-            <p className="text-sm md:text-base text-[#00253E] leading-7 whitespace-pre-line">
-              {staticContent[language].intro}
-            </p>
+      <div className="bg-[#EDEDED] border-l-4 border-[#BADA55] rounded-xl p-8 space-y-3 text-sm leading-7">
 
-            
+        {/* AI PROMPT FIRST */}
 
-            {/* Static fields */}
-            {staticContent[language].fields.map((item, idx) => (
-              <div key={idx} className="flex flex-col gap-1">
-                <span className="font-bold text-[#00253E]">{item.heading}</span>
-                <span className="font-normal text-sm md:text-base text-[#00253E] whitespace-pre-line">
-                  {item.value}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <div>
+          <p className="font-semibold text-black">
+            {filteredMeasureTypes?.name}
+          </p>
+
+          <p className="text-blue-600 whitespace-pre-line">
+            {filteredMeasureTypes?.values?.[language]}
+          </p>
+        </div>
+
+        {/* Stakeholder */}
+
+        <div>
+          <p className="font-semibold">Stakeholder :</p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.name || "N/A"}
+          </p>
+        </div>
+
+        {/* Project */}
+
+        <div>
+          <p className="font-semibold">Project :</p>
+          <p className="text-pink-600">
+            {projectData?.data?.projectTitle || "N/A"}
+          </p>
+        </div>
+
+        {/* Vision */}
+
+        <div>
+          <p className="font-semibold">Vision</p>
+          <p className="text-pink-600">
+            {projectData?.data?.systemForms?.vision || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            The past (good old days)
+          </p>
+          <p className="text-pink-600">
+            {projectData?.data?.systemForms?.pastGoodOldDays || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Obstacle / Problem
+          </p>
+          <p className="text-pink-600">
+            {projectData?.data?.systemForms?.obstacleProblem || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Risk of inaction / Consequences
+          </p>
+          <p className="text-pink-600">
+            {projectData?.data?.systemForms?.riskOfInaction || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Solution / Idea
+          </p>
+          <p className="text-pink-600">
+            {projectData?.data?.systemForms?.solutionIdea || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Pain Point
+          </p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.painPoint || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Benefits
+          </p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.benefits || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Objections / Concerns
+          </p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.objectionsConcerns || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Objection Handling
+          </p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.objectionHandling || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Call to Action
+          </p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.callToAction || "N/A"}
+          </p>
+        </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex items-center gap-6 flex-wrap">
+      {/* BUTTONS */}
+
+      <div className="flex gap-6">
         <button
-          type="button"
           onClick={() => window.history.back()}
-          className="h-[50px] flex items-center gap-2 bg-transparent border border-[#BADA55] px-7 py-4 rounded-[8px]"
+          className="flex items-center gap-2 border border-[#BADA55] px-6 py-3 rounded"
         >
-          <ChevronsLeft className="h-4 w-4" />
+          <ChevronsLeft size={18} />
           Back
         </button>
 
         <button
           onClick={handleCopy}
-          disabled={!filteredMeasureTypes.length}
-          className="h-[50px] flex items-center gap-2 bg-primary px-8 py-4 rounded-[8px] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded"
         >
-          <Copy className="h-4 w-4" />
+          <Copy size={18} />
           Copy Prompt
         </button>
       </div>
@@ -302,477 +345,3 @@ const handleCopy = async () => {
 
 export default KickOffStoryAiContainer;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// second version 
-
-// "use client";
-
-// import { useQuery } from "@tanstack/react-query";
-// import React, { useState } from "react";
-// import { AiApiResponse } from "./kick-off-story-ai-data-type";
-// import Image from "next/image";
-// import ai_prompt_image from "../../../../../../../public/assets/images/ai_prompt.png";
-// import { toast } from "sonner";
-// import { ChevronsLeft, Copy } from "lucide-react";
-// import { useSearchParams } from "next/navigation";
-
-// const KickOffStoryAiContainer = () => {
-//   const [language, setLanguage] = useState<"en" | "de">("en");
-//   const searchParams = useSearchParams();
-//   const selectedType = searchParams.get("type");
-
-//   const { data, isLoading, isError } = useQuery<AiApiResponse>({
-//     queryKey: ["kickOffStory-ai"],
-//     queryFn: async () => {
-//       const res = await fetch(
-//         `${process.env.NEXT_PUBLIC_BACKEND_URL}/system-setting/69a155d6581efd8db0fe3bed`
-//       );
-//       if (!res.ok) throw new Error("Failed to fetch data");
-//       return res.json();
-//     },
-//   });
-
-//   const measureTypes = data?.data?.measureTypes || [];
-
-//   const filteredMeasureTypes = measureTypes.filter(
-//     (item) => item.name === selectedType
-//   );
-
-//   /* Static content with headings bold and values normal */
-//   const staticContent = {
-//     de: [
-//       { heading: "Zielgruppe:", value: "Mitarbeiter" },
-//       { heading: "Projekt:", value: "Confluence" },
-//       { heading: "Vision", value: "Ein neues Intranet, das individuell gepflegt werden kann" },
-//       { heading: "Vergangenheit", value: "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat" },
-//       { heading: "Hindernis / Problem", value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden" },
-//       { heading: "Risikobei Nicht-Handeln / Konsequenszen", value: "Die zentrale Intranet Abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt." },
-//       { heading: "Lösung / Idee", value: "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann" },
-//       { heading: "Pain Points", value: "Müssen neues Programm lernen, Neuer Mehraufwand" },
-//       { heading: "Benefits", value: "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen" },
-//       { heading: "Bedenken / Einwände", value: "Neues Software ist nicht bekannt. Angst vor versagen" },
-//       { heading: "Einwandbehandlung", value: "Testing Snipsel" },
-//       { heading: "Call to Action", value: "Werde Ambassador" },
-//     ],
-//     en: [
-//       { heading: "Stakeholder:", value: "Mitarbeiter" },
-//       { heading: "Project:", value: "Confluence" },
-//       { heading: "Vision", value: "Ein neues Intranet, das individuell gepflegt werden kann" },
-//       { heading: "The past (good old days)", value: "Zentrales Internet, dass bei dem damaligen Aufwand gut funktioniert hat" },
-//       { heading: "Obstacle / Problem", value: "Der Aufwand ist gestiegen und kann schlecht bewältigt werden" },
-//       { heading: "Risk of inaction / Consequences", value: "Die zentrale Intranet abteiilung schafft den Aufwand nicht mehr. Die individuellen Abteilungen werden nicht bei redaktionellen Beiträgen berücksichtigt." },
-//       { heading: "Solution / Idea", value: "Confluence als Anwenderfreundliche lösung, die von den Abteilungen selbst gepflegt werden kann" },
-//       { heading: "Pain Point", value: "Müssen neues Programm lernen, Neuer Mehraufwand" },
-//       { heading: "Benefits", value: "Individuelle Pflege möglich, Abteilung wird im Unternehmen besser wahrgenommen" },
-//       { heading: "Objections / Concerns", value: "Neues Software ist nicht bekannt. Angst vor versagen" },
-//       { heading: "Objection Handling", value: "Testing Snipsel" },
-//       { heading: "Call to Action", value: "Werde Ambassador" },
-//     ],
-//   };
-
-//   const handleCopy = async () => {
-//     if (!filteredMeasureTypes.length) return;
-
-//     const dynamicPart = `${filteredMeasureTypes[0].name} : ${
-//       filteredMeasureTypes[0].values?.[language] ?? ""
-//     }`;
-
-//     const staticPart = staticContent[language]
-//       .map((item) => `${item.heading} ${item.value}`)
-//       .join("\n\n");
-
-//     const textToCopy = `${dynamicPart}\n\n${staticPart}`;
-
-//     await navigator.clipboard.writeText(textToCopy);
-//     toast.success("Prompt copied successfully!");
-//   };
-
-//   if (isLoading) {
-//     return (
-//       <div className="p-6 space-y-6 animate-pulse">
-//         <div className="h-6 w-48 bg-gray-300 rounded-md" />
-//         <div className="bg-gray-100 border rounded-lg p-6 space-y-4">
-//           <div className="h-4 bg-gray-300 rounded w-full" />
-//           <div className="h-4 bg-gray-300 rounded w-5/6" />
-//           <div className="h-4 bg-gray-300 rounded w-4/6" />
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   if (isError) {
-//     return (
-//       <div className="p-6">
-//         <div className="border border-red-200 bg-red-50 rounded-lg p-6 text-center space-y-4">
-//           <div className="text-red-600 text-3xl">⚠️</div>
-//           <h2 className="text-lg font-semibold text-red-700">
-//             Failed to Load Data
-//           </h2>
-//           <p className="text-sm text-red-600">
-//             We couldn’t fetch the measure types. Please try again.
-//           </p>
-//           <button
-//             onClick={() => window.location.reload()}
-//             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-//           >
-//             Retry
-//           </button>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="p-6 space-y-6">
-//       {/* Header */}
-//       <div className="flex justify-between items-center">
-//         <div>
-//           <h1 className="text-2xl md:text-3xl lg:text-4xl text-[#00253E] leading-[110%] font-semibold">
-//             <Image
-//               src={ai_prompt_image}
-//               width={32}
-//               height={32}
-//               alt="Kick Off Story Icon"
-//               className="inline mr-2"
-//             />
-//             Kick Off Story
-//           </h1>
-
-//           <p className="text-base md:text-lg lg:text-xl text-[#00253E] leading-[110%] pt-4">
-//             Final Prompt (Ready to copy)
-//           </p>
-//         </div>
-
-//         {/* Language Toggle */}
-//         <div className="flex gap-2">
-//           <button
-//             onClick={() => setLanguage("en")}
-//             className={`px-3 py-1 rounded-md text-sm ${
-//               language === "en" ? "bg-green-500 text-white" : "bg-gray-200"
-//             }`}
-//           >
-//             EN
-//           </button>
-//           <button
-//             onClick={() => setLanguage("de")}
-//             className={`px-3 py-1 rounded-md text-sm ${
-//               language === "de" ? "bg-green-500 text-white" : "bg-gray-200"
-//             }`}
-//           >
-//             DE
-//           </button>
-//         </div>
-//       </div>
-
-//       {/* Prompt Box */}
-//       <div className="bg-[#EDEDED] border-l-[4px] border-[#BADA55] rounded-xl p-8 space-y-6">
-//         {filteredMeasureTypes.length === 0 ? (
-//           <p className="text-sm text-gray-600">No data found for this type.</p>
-//         ) : (
-//           <div className="space-y-4">
-//             <div className="flex flex-col gap-2">
-//               <h4 className="font-bold text-[#00253E]">
-//                 {filteredMeasureTypes[0].name} :
-//               </h4>
-//               <p className="text-sm md:text-base text-[#00253E]">
-//                 {filteredMeasureTypes[0].values?.[language] ?? ""}
-//               </p>
-
-//               {staticContent[language].map((item, idx) => (
-//                 <div key={idx} className="flex flex-col gap-1">
-//                   <span className="font-bold">{item.heading}</span>
-//                   <span className="font-normal">{item.value}</span>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Buttons */}
-//       <div className="flex items-center gap-6">
-//         <button
-//           type="button"
-//           onClick={() => window.history.back()}
-//           className="h-[50px] flex items-center gap-2 bg-transparent border border-[#BADA55] px-7 py-4 rounded-[8px]"
-//         >
-//           <ChevronsLeft className="h-4 w-4" />
-//           Back
-//         </button>
-
-//         <button
-//           onClick={handleCopy}
-//           className="h-[50px] flex items-center gap-2 bg-primary px-8 py-4 rounded-[8px]"
-//         >
-//           <Copy className="h-4 w-4" />
-//           Copy Prompt
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default KickOffStoryAiContainer;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// old code :
-
-
-// /* eslint-disable react-hooks/exhaustive-deps */
-// "use client";
-
-// import { useQuery } from "@tanstack/react-query";
-// import React, { useMemo, useState } from "react";
-// import { AiApiResponse } from "./kick-off-story-ai-data-type";
-// import Image from "next/image";
-// import ai_prompt_image from "../../../../../../../public/assets/images/ai_prompt.png";
-// import { toast } from "sonner";
-// import { ChevronsLeft, Copy } from "lucide-react";
-// import { useSearchParams } from "next/navigation";
-
-// const KickOffStoryAiContainer = () => {
-//   const [language, setLanguage] = useState<"en" | "de">("en");
-//   const searchParams = useSearchParams();
-//   const selectedType = searchParams.get("type");
-//   console.log("Selected Type:", selectedType);
-
-//   const { data, isLoading, isError } = useQuery<AiApiResponse>({
-//     queryKey: ["kickOffStory-ai"],
-//     queryFn: async () => {
-//       const res = await fetch(
-//         `${process.env.NEXT_PUBLIC_BACKEND_URL}/system-setting/69a155d6581efd8db0fe3bed`,
-//       );
-//       if (!res.ok) throw new Error("Failed to fetch data");
-//       return res.json();
-//     },
-//   });
-
-//   console.log(data);
-
-//   const measureTypes = data?.data?.measureTypes || [];
-//   const filteredMeasureTypes = measureTypes.filter(
-//   (item) => item.name === selectedType
-// );
-
-// console.log(filteredMeasureTypes)
-//   const slideCount = measureTypes.length;
-
-//   /* ========= OPTIONAL: STRING PROMPT (COPY করার জন্য রাখলাম) ========= */
-//   const generatedPrompt = useMemo(() => {
-//     if (!measureTypes.length) return "";
-
-//     const stepsLine = measureTypes
-//       .map((item, index) => `${index + 1}. ${item.name}`)
-//       .join(", ");
-
-//     const details = measureTypes
-//       .map(
-//         (item, index) => `${index + 1}. ${item.name}: ${item.values[language]}`,
-//       )
-//       .join("\n\n");
-
-//     return `Create a presentation based on the following storyline in ${measureTypes.length} Slides. Create one slide for each step in the story:
-
-// Steps: ${stepsLine}
-
-// ${details}
-// `;
-//   }, [measureTypes, language]);
-
-//   const handleCopy = async () => {
-//     if (!generatedPrompt) return;
-//     await navigator.clipboard.writeText(generatedPrompt);
-//     toast.success("Prompt copied successfully!");
-//   };
-
-//   if (isLoading) {
-//     return (
-//       <div className="p-6 space-y-6 animate-pulse">
-//         <div className="h-6 w-48 bg-gray-300 rounded-md" />
-//         <div className="bg-gray-100 border rounded-lg p-6 space-y-4">
-//           <div className="h-4 bg-gray-300 rounded w-full" />
-//           <div className="h-4 bg-gray-300 rounded w-5/6" />
-//           <div className="h-4 bg-gray-300 rounded w-4/6" />
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   if (isError) {
-//     return (
-//       <div className="p-6">
-//         <div className="border border-red-200 bg-red-50 rounded-lg p-6 text-center space-y-4">
-//           <div className="text-red-600 text-3xl">⚠️</div>
-//           <h2 className="text-lg font-semibold text-red-700">
-//             Failed to Load Data
-//           </h2>
-//           <p className="text-sm text-red-600">
-//             We couldn’t fetch the measure types. Please try again.
-//           </p>
-//           <button
-//             onClick={() => window.location.reload()}
-//             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-//           >
-//             Retry
-//           </button>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="p-6 space-y-6">
-//       {/* Header */}
-//       <div className="flex justify-between items-center">
-//         <div>
-//           <h1 className="text-2xl md:text-3xl lg:text-4xl text-[#00253E] leading-[110%] font-semibold">
-//             <Image
-//               src={ai_prompt_image}
-//               width={32}
-//               height={32}
-//               alt="Kick Off Story Icon"
-//               className="inline mr-2"
-//             />
-//             Kick Off Story
-//           </h1>
-//           <p className="text-base md:text-lg lg:text-xl text-[#00253E] leading-[110%] pt-4">
-//             Final Prompt (Ready to copy)
-//           </p>
-//         </div>
-
-//         {/* Language Toggle */}
-//         <div className="flex gap-2">
-//           <button
-//             onClick={() => setLanguage("en")}
-//             className={`px-3 py-1 rounded-md text-sm ${
-//               language === "en" ? "bg-green-500 text-white" : "bg-gray-200"
-//             }`}
-//           >
-//             EN
-//           </button>
-//           <button
-//             onClick={() => setLanguage("de")}
-//             className={`px-3 py-1 rounded-md text-sm ${
-//               language === "de" ? "bg-green-500 text-white" : "bg-gray-200"
-//             }`}
-//           >
-//             DE
-//           </button>
-//         </div>
-//       </div>
-
-//       {/* ✅ NEW PROMPT BOX UI (তোমার দেওয়া স্টাইল) */}
-//       <div className="bg-[#EDEDED] border-l-[4px] border-[#BADA55] rounded-xl p-8 space-y-6">
-//         {/* Presentation Instruction */}
-//         <div className="flex items-center gap-2">
-//           <p className="text-lg md:text-xl font-semibold text-[#00253E]">
-//             Create a presentation based on the following storyline in{" "}
-//             <span className="font-bold text-[#00253E]">
-//               {slideCount} slides
-//             </span>
-//             .
-//           </p>
-//           <p className="text-sm md:text-base font-normal text-[#00253E]">
-//             Create one slide for each step in the story.
-//           </p>
-//         </div>
-
-//         {/* Steps */}
-//         <div>
-//           <h3 className="text-lg md:text-xl font-semibold text-[#00253E] pb-2">
-//             Steps :
-//           </h3>
-
-//           {slideCount === 0 ? (
-//             <p className="text-sm text-gray-600">No steps found.</p>
-//           ) : (
-//             <div className="flex flex-wrap gap-2">
-//               {measureTypes.map((item, index) => (
-//                 <span
-//                   key={index}
-//                   className="bg-white border px-3 py-1 rounded-full text-sm shadow-sm"
-//                 >
-//                   {index + 1}. {item.name}
-//                 </span>
-//               ))}
-//             </div>
-//           )}
-//         </div>
-
-//         <p className="text-sm md:text-base font-normal text-[#00253E]">
-//           Develop a creative headline and create a modern, creative
-//           visualization for each slide. Supplement the points from the Insight
-//           Engine with additional information from the Internet.
-//         </p>
-
-//         {/* Detailed Prompt */}
-//         <div className="space-y-4">
-//           {measureTypes.map((item, index) => (
-//             <div key={index} className="flex items-center gap-2">
-//               <h4 className="font-bold text-[#00253E] text-base md:text-lg">
-//                 {index + 1}. {item.name} :
-//               </h4>
-//               <p className="text-sm md:text-base font-normal text-[#00253E]">
-//                 {item.values?.[language] ?? ""}
-//               </p>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* Buttons */}
-
-//       <div className="flex items-center  gap-6">
-//         <button
-//           type="button"
-//           onClick={() => window.history.back()}
-//           className="h-[50px] flex items-center gap-2 bg-transparent border border-[#BADA55] text-base font-medium leading-normal text-[#00253E] px-7 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02]"
-//         >
-//           <ChevronsLeft className="h-4 w-4" />
-//           Back
-//         </button>
-//         <button
-//           onClick={handleCopy}
-//           className="h-[50px] flex items-center gap-2 bg-primary text-base font-medium leading-normal text-[#00253E] px-8 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02]"
-//         >
-//           <Copy className="h-4 w-4" />
-//           Copy Prompt
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default KickOffStoryAiContainer;
