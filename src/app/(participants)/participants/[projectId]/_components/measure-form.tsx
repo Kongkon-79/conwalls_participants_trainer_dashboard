@@ -345,7 +345,11 @@ export default function MeasureForm({
               // href={`/participants/${projectId}/kick-off-story`}
               href={{
                 pathname: `/participants/${projectId}/kick-off-story`,
-                query: { type: typeValue },
+                query: {
+                  projectId: projectId,
+                  stakeholderId: stakeholderId,
+                  type: typeValue,
+                },
               }}
             >
               <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white leading-[110%] font-medium notranslate">
