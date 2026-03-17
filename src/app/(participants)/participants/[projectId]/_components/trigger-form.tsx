@@ -51,6 +51,9 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
   const token = (session?.data?.user as { accessToken?: string })?.accessToken
   const queryClient = useQueryClient()
 
+  const projectId = stakeholder?.insightEngineId
+  const stakeholderId = stakeholder?._id;
+
   // Use the same helpText fetching logic based on global language/cookie if needed
   const { data: systemSettings } = useSystemSettings()
 
@@ -270,7 +273,18 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         </div>
 
         <div className="w-full flex items-center justify-end">
-          <Link href={`/participants/insight-engine/trigger-ai`}>
+          <Link
+          //  href={`/participants/insight-engine/trigger-ai`}
+
+          href={{
+                pathname: `/participants/insight-engine/trigger-ai`,
+                query: {
+                  projectId: projectId,
+                  stakeholderId: stakeholderId,
+                  // type: typeValue,
+                },
+              }}
+          >
             <button className="flex items-center gap-1 bg-[#00253E] rounded-[8px] py-4 px-6 text-base text-white notranslate leading-[110%] font-medium">
               <Image
                 src={aiIcon}

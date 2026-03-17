@@ -1,56 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-'use client'
+"use client";
 
-import { useQuery } from '@tanstack/react-query'
-import React, { useMemo, useState } from 'react'
-import Image from 'next/image'
-import { useSession } from 'next-auth/react'
-import ai_prompt_image from '../../../../../../../public/assets/images/ai_prompt.png'
-import { toast } from 'sonner'
-import { ChevronsLeft, Copy } from 'lucide-react'
-import {
-  FilteredHelpTextsResponse,
-  Language,
-  SystemSettingsResponse,
-} from './trigger-ai-data-type'
-
-const SYSTEM_SETTING_ID = '69a155d6581efd8db0fe3bed'
+import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import ai_prompt_image from "../../../../../../../public/assets/images/ai_prompt.png";
+import { toast } from "sonner";
+import { ChevronsLeft, Copy } from "lucide-react";
+import { Language, SystemSettingsResponse } from "./trigger-ai-data-type";
+import { useSearchParams } from "next/navigation";
+import { ProjectsApiResponse } from "../../../[projectId]/kick-off-story/_components/project-data-type";
+import { StakeholderApiResponse } from "../../../[projectId]/kick-off-story/_components/stakeholder-data-type";
 
 const TriggerAiContainer = () => {
-  const [language, setLanguage] = useState<Language>('en')
-  const { data: session } = useSession()
-  const accessToken = session?.user?.accessToken
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("projectId");
+  const stakeholderId = searchParams.get("stakeholderId");
 
-  // Fetch Filtered Help Texts
-  const {
-    data: filteredData,
-    isLoading: isLoadingFiltered,
-    isError: isErrorFiltered,
-  } = useQuery<FilteredHelpTextsResponse>({
-    queryKey: ['filtered-helptexts', SYSTEM_SETTING_ID, accessToken],
-    queryFn: async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/system-setting/${SYSTEM_SETTING_ID}/filtered-helptexts`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      )
-      if (!res.ok) throw new Error('Failed to fetch data')
-      return res.json()
-    },
-    enabled: !!accessToken,
-  })
+  const [language, setLanguage] = useState<Language>("en");
+  const { data: session } = useSession();
+  const accessToken = session?.user?.accessToken;
 
-  // Fetch Full System Settings (to get triggerAiPrompt)
+  /* ---------------- SYSTEM SETTINGS ---------------- */
+
   const {
     data: settingsData,
     isLoading: isLoadingSettings,
     isError: isSettingsError,
   } = useQuery<SystemSettingsResponse>({
-    queryKey: ['system-settings-trigger-ai', accessToken],
+    queryKey: ["system-settings-trigger-ai", accessToken],
     queryFn: async () => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/system-setting`,
@@ -58,266 +38,243 @@ const TriggerAiContainer = () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        },
-      )
-      if (!res.ok) throw new Error('Failed to fetch system settings')
-      return res.json()
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch system settings");
+      return res.json();
     },
     enabled: !!accessToken,
-  })
+  });
 
-  const isLoading = isLoadingFiltered || isLoadingSettings
-  const isError = isErrorFiltered || isSettingsError
+  /* ---------------- PROJECT DATA ---------------- */
 
-  // Retrieve data
-  const measureTypes = filteredData?.data ?? []
-  const slideCount = measureTypes.length
+  const { data: projectData } = useQuery<ProjectsApiResponse>({
+    queryKey: ["project-data", projectId],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/insight-engine/${projectId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-  const systemSettingsItem = settingsData?.data?.items?.[0]
-  const triggerAiPrompts = systemSettingsItem?.triggerAiPrompt ?? []
+      if (!res.ok) throw new Error("Failed to fetch project");
+      return res.json();
+    },
+    enabled: !!accessToken && !!projectId,
+  });
 
-  /* ========= STRING PROMPT (COPY করার জন্য) ========= */
-  const generatedPrompt = useMemo(() => {
-    if (!measureTypes.length) return ''
+  /* ---------------- STAKEHOLDER DATA ---------------- */
 
-    const stepsLine = measureTypes
-      .map((item, index) => `${index + 1}. ${item.name}`)
-      .join(', ')
+  const { data: stakeholderData } = useQuery<StakeholderApiResponse>({
+    queryKey: ["stakeholder-data", stakeholderId],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/stakeholder/single/${stakeholderId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-    const details = measureTypes
-      .map(
-        (item, index) =>
-          `${index + 1}. ${item.name}: ${item.values?.[language] ?? ''}`,
-      )
-      .join('\n\n')
+      if (!res.ok) throw new Error("Failed to fetch stakeholder");
+      return res.json();
+    },
+    enabled: !!accessToken && !!stakeholderId,
+  });
 
-    return `Create a presentation based on the following storyline in ${slideCount} Slides. Create one slide for each step in the story:
+  const systemSettingsItem = settingsData?.data?.items?.[0];
+  const triggerAiPrompts = systemSettingsItem?.triggerAiPrompt ?? [];
 
-Steps: ${stepsLine}
+  const project = projectData?.data;
+  const stakeholder = stakeholderData?.data;
 
-${details}
-`
-  }, [measureTypes, language, slideCount])
+  const isLoading = isLoadingSettings;
+  const isError = isSettingsError;
 
-  const handleCopy = async () => {
-    if (!generatedPrompt) return
-    await navigator.clipboard.writeText(generatedPrompt)
-    toast.success('Prompt copied successfully!')
-  }
+  /* ---------------- COPY PROMPT ---------------- */
 
-  const handleCopyTriggerAi = async (htmlText: string) => {
-    // Strip HTML tags for clipboard
-    const plainText = htmlText.replace(/<[^>]+>/g, '')
-    await navigator.clipboard.writeText(plainText)
-    toast.success('Trigger AI Prompt copied successfully!')
-  }
+  const handleCopyPrompt = async () => {
+    const htmlPrompt = triggerAiPrompts
+      .map((p) => p.values?.[language] || "")
+      .join("\n\n");
+
+    const plainPrompt = htmlPrompt.replace(/<[^>]+>/g, "\n");
+
+    const textToCopy = `
+${plainPrompt}
+
+Stakeholder:
+${stakeholder?.name || "N/A"}
+
+Project:
+${project?.projectTitle || "N/A"}
+
+Vision
+${project?.systemForms?.vision || "N/A"}
+
+The past (good old days)
+${project?.systemForms?.pastGoodOldDays || "N/A"}
+
+Obstacle / Problem
+${project?.systemForms?.obstacleProblem || "N/A"}
+
+Risk of inaction / Consequences
+${project?.systemForms?.riskOfInaction || "N/A"}
+
+Solution / Idea
+${project?.systemForms?.solutionIdea || "N/A"}
+`.trim();
+
+    await navigator.clipboard.writeText(textToCopy);
+    toast.success("Prompt copied successfully!");
+  };
 
   if (isLoading) {
-    return (
-      <div className="p-6 space-y-6 animate-pulse">
-        <div className="h-6 w-48 bg-gray-300 rounded-md" />
-        <div className="bg-gray-100 border rounded-lg p-6 space-y-4">
-          <div className="h-4 bg-gray-300 rounded w-full" />
-          <div className="h-4 bg-gray-300 rounded w-5/6" />
-          <div className="h-4 bg-gray-300 rounded w-4/6" />
-        </div>
-      </div>
-    )
+    return <div className="p-6">Loading...</div>;
   }
 
   if (isError) {
-    return (
-      <div className="p-6">
-        <div className="border border-red-200 bg-red-50 rounded-lg p-6 text-center space-y-4">
-          <div className="text-red-600 text-3xl">⚠️</div>
-          <h2 className="text-lg font-semibold text-red-700">
-            Failed to Load Data
-          </h2>
-          <p className="text-sm text-red-600">
-            We couldn’t fetch the required data. Please try again.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
+    return <div className="p-6 text-red-500">Failed to load data</div>;
   }
 
   return (
-    <div className="p-6 space-y-10">
-      {/* Header & Main Prompt Block */}
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl text-[#00253E] leading-[110%] font-semibold">
-              <Image
-                src={ai_prompt_image}
-                width={32}
-                height={32}
-                alt="Kick Off Story Icon"
-                className="inline mr-2"
-              />
-              Kick Off Story
-            </h1>
-            <p className="text-base md:text-lg lg:text-xl text-[#00253E] leading-[110%] pt-4">
-              Final Prompt (Ready to copy)
-            </p>
-          </div>
+    <div className="p-6 space-y-6">
+      {/* HEADER */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold text-[#00253E]">
+            <Image
+              src={ai_prompt_image}
+              width={32}
+              height={32}
+              alt="ai"
+              className="inline mr-2"
+            />
+            Trigger AI Prompt
+          </h1>
 
-          {/* Language Toggle */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-3 py-1 rounded-md text-sm font-medium ${
-                language === 'en'
-                  ? 'bg-[#BADA55] text-[#00253E]'
-                  : 'bg-gray-200 text-[#00253E]'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLanguage('de')}
-              className={`px-3 py-1 rounded-md text-sm font-medium ${
-                language === 'de'
-                  ? 'bg-[#BADA55] text-[#00253E]'
-                  : 'bg-gray-200 text-[#00253E]'
-              }`}
-            >
-              DE
-            </button>
-          </div>
+          <p className="text-lg text-[#00253E] mt-2">Final Prompt</p>
         </div>
 
-        {/* Existing Prompt Box UI - Commented out as requested
-        <div className="bg-[#EDEDED] border-l-[4px] border-[#00253E] rounded-xl p-8 space-y-6">
-          <div className="space-y-2">
-            <p className="text-lg md:text-xl font-semibold text-[#00253E]">
-              Create a presentation based on the following storyline in{' '}
-              <span className="font-bold text-[#00253E]">
-                {slideCount} slides
-              </span>
-              .
-            </p>
-            <p className="text-sm md:text-base font-normal text-[#00253E]">
-              Create one slide for each step in the story.
-            </p>
-          </div>
+        {/* LANGUAGE SWITCH */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setLanguage("en")}
+            className={`px-3 py-1 rounded ${
+              language === "en" ? "bg-green-500 text-white" : "bg-gray-200"
+            }`}
+          >
+            EN
+          </button>
 
-          <div>
-            <h3 className="text-lg md:text-xl font-semibold text-[#00253E] pb-2">
-              Steps :
-            </h3>
-
-            {slideCount === 0 ? (
-              <p className="text-sm text-gray-600">No steps found.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {measureTypes.map((item, index) => (
-                  <span
-                    key={index}
-                    className="bg-white border px-3 py-1 rounded-full text-sm shadow-sm"
-                  >
-                    {index + 1}. {item.name}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <p className="text-sm md:text-base font-normal text-[#00253E]">
-            Develop a creative headline and create a modern, creative
-            visualization for each slide. Supplement the points from the Insight
-            Engine with additional information from the Internet.
-          </p>
-
-          <div className="space-y-4">
-            {measureTypes.map((item, index) => (
-              <div key={index} className="space-y-1">
-                <h4 className="font-bold text-[#00253E] text-base md:text-lg">
-                  {index + 1}. {item.name} :
-                </h4>
-                <p className="text-sm md:text-base font-normal text-[#00253E] whitespace-pre-line">
-                  {item.values?.[language] ?? ''}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-2">
-            <button
-              onClick={handleCopy}
-              className="px-6 py-2.5 bg-[#D0DDE8] hover:bg-[#B8CADB] text-[#00253E] font-semibold rounded-[4px] flex items-center gap-2 transition-all"
-            >
-              <Copy className="h-4 w-4" />
-              Copy Main Prompt
-            </button>
-          </div>
+          <button
+            onClick={() => setLanguage("de")}
+            className={`px-3 py-1 rounded ${
+              language === "de" ? "bg-green-500 text-white" : "bg-gray-200"
+            }`}
+          >
+            DE
+          </button>
         </div>
-        */}
-
-        {/* Dynamic Trigger AI Prompts from Admin */}
-        {triggerAiPrompts.length > 0 && (
-          <div className="space-y-6 mt-2">
-            <div className="flex flex-col gap-6">
-              {triggerAiPrompts.map((prompt, index) => {
-                const htmlContent = prompt.values?.[language] || ''
-
-                if (!htmlContent.trim()) return null
-
-                return (
-                  <div
-                    key={index}
-                    className="bg-[#EDEDED] border-l-[4px] border-[#BADA55] rounded-xl p-8 space-y-6 flex flex-col justify-between"
-                  >
-                    <div className="space-y-4">
-                      {prompt.name !== 'trigger Ai Prompt' && (
-                        <h3 className="text-lg md:text-xl font-semibold text-[#00253E] pb-2 uppercase tracking-wide">
-                          {prompt.name}
-                        </h3>
-                      )}
-
-                      {/* Rich text container styling matching the previous layout */}
-                      <div
-                        className="text-sm md:text-base font-normal text-[#00253E] leading-relaxed [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mb-2"
-                        dangerouslySetInnerHTML={{ __html: htmlContent }}
-                      />
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        onClick={() => handleCopyTriggerAi(htmlContent)}
-                        className="px-6 py-2.5 bg-[#BADA55] hover:bg-[#A9C94D] text-[#00253E] font-semibold rounded-[4px] flex items-center gap-2 transition-all w-fit"
-                      >
-                        <Copy className="h-4 w-4" />
-                        Copy Prompt
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Back Button Footer */}
-      <div className="pt-4 border-t border-gray-100">
+      {/* PROMPT BOX */}
+      {triggerAiPrompts.map((prompt, index) => {
+        const htmlContent = prompt.values?.[language] || "";
+
+        if (!htmlContent.trim()) return null;
+
+        return (
+          <div
+            key={index}
+            className="bg-[#EDEDED] border-l-4 border-[#BADA55] rounded-xl p-8 space-y-3 text-sm leading-7"
+          >
+            <div>
+              <div className="text-blue-600 space-y-3">
+                {htmlContent
+                  .replace(/<[^>]+>/g, "\n")
+                  .split("\n")
+                  .map((line) => line.trim())
+                  .filter(Boolean)
+                  .map((line, i) => (
+                    <p key={i}>{i === 0 ? line : `${i + 1}. ${line}`}</p>
+                  ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="font-semibold">Stakeholder :</p>
+              <p className="text-pink-600">{stakeholder?.name || "N/A"}</p>
+            </div>
+
+            <div>
+              <p className="font-semibold">Project :</p>
+              <p className="text-pink-600">{project?.projectTitle || "N/A"}</p>
+            </div>
+
+            <div>
+              <p className="font-semibold">Vision</p>
+              <p className="text-pink-600">
+                {project?.systemForms?.vision || "N/A"}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold">The past (good old days)</p>
+              <p className="text-pink-600">
+                {project?.systemForms?.pastGoodOldDays || "N/A"}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold">Obstacle / Problem</p>
+              <p className="text-pink-600">
+                {project?.systemForms?.obstacleProblem || "N/A"}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold">Risk of inaction / Consequences</p>
+              <p className="text-pink-600">
+                {project?.systemForms?.riskOfInaction || "N/A"}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold">Solution / Idea</p>
+              <p className="text-pink-600">
+                {project?.systemForms?.solutionIdea || "N/A"}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* BUTTONS */}
+      <div className="flex gap-6">
         <button
-          type="button"
           onClick={() => window.history.back()}
-          className="h-[50px] flex items-center gap-2 bg-transparent border border-[#00253E] text-base font-medium leading-normal text-[#00253E] px-7 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:bg-gray-50"
+          className="flex items-center gap-2 border border-[#BADA55] px-6 py-3 rounded"
         >
-          <ChevronsLeft className="h-4 w-4" />
+          <ChevronsLeft size={18} />
           Back
+        </button>
+
+        <button
+          onClick={handleCopyPrompt}
+          className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded"
+        >
+          <Copy size={18} />
+          Copy Prompt
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TriggerAiContainer
+export default TriggerAiContainer;

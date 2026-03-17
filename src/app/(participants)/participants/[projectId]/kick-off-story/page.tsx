@@ -1,12 +1,14 @@
-import React from 'react'
-import KickOffStoryAiContainer from './_components/kick-off-story-ai-container'
+import React, { Suspense } from "react";
+import KickOffStoryAiContainer from "./_components/kick-off-story-ai-container";
 
 const KickOffStory = () => {
   return (
     <div>
-        <KickOffStoryAiContainer/>
+      <Suspense fallback={<div>Loading...</div>}>
+        <KickOffStoryAiContainer />
+      </Suspense>
     </div>
-  )
-}
+  );
+};
 
-export default KickOffStory
+export default KickOffStory;
