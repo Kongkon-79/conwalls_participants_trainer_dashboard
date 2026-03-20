@@ -70,6 +70,8 @@ const KickOffStoryAiContainer = () => {
     enabled: !!token && !!projectId,
   });
 
+
+  console.log(projectData)
   /* ---------------- STAKEHOLDER DATA ---------------- */
 
   const { data: stakeholderData } = useQuery<StakeholderApiResponse>({
@@ -90,6 +92,8 @@ const KickOffStoryAiContainer = () => {
     },
     enabled: !!token && !!stakeholderId,
   });
+
+  console.log(stakeholderData)
 
   /* ---------------- COPY PROMPT ---------------- */
 
@@ -124,6 +128,12 @@ ${systemForms?.riskOfInaction}
 
 Solution / Idea
 ${systemForms?.solutionIdea}
+
+Role
+${stakeholder?.roleType}
+
+Trigger Evaluations
+${stakeholder?.triggerEvaluation}
 
 Pain Point
 ${stakeholder?.painPoint}
@@ -271,6 +281,24 @@ ${stakeholder?.callToAction}
           </p>
           <p className="text-pink-600">
             {projectData?.data?.systemForms?.solutionIdea || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Role
+          </p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.roleType || "N/A"}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold">
+            Trigger Evaluations
+          </p>
+          <p className="text-pink-600">
+            {stakeholderData?.data?.triggerEvaluation || "N/A"}
           </p>
         </div>
 

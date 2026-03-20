@@ -534,6 +534,9 @@ export default function Timetable({
                           <span className="text-[11px] text-[#00253E]/70 font-black mt-0.5">
                             {m.startWeeks} Weeks
                           </span>
+                          <span className="text-[11px] text-[#00253E]/70 font-black mt-0.5">
+                            {formattedStartDate}
+                          </span>
                         </div>
                       </div>
 

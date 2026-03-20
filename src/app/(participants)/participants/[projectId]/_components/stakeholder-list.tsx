@@ -296,15 +296,17 @@ export default function StakeholderList({
         <Button
           variant="outline"
           onClick={onBack}
-          className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 font-medium border-primary text-[#00253E] hover:bg-gray-50 bg-white"
+          className="h-[48px] px-8 rounded-[8px] flex items-center gap-2 font-medium border-primary text-[#00253E] hover:bg-gray-50 bg-white notranslate"
         >
           <ChevronLeft className="w-5 h-5" />
-          Back
+           {lang === "de"
+            ? "Projekt"
+            : "Project"}
         </Button>
 
         <Button
           onClick={() => setIsAdding(true)}
-          className="bg-primary hover:bg-primary/90 text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold"
+          className="bg-primary hover:bg-primary/90 text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold notranslate" 
         >
           <Plus className="w-5 h-5" />
 
@@ -314,7 +316,7 @@ export default function StakeholderList({
         </Button>
         <Button
           onClick={onNext}
-          className="bg-primary notranslate hover:bg-primary/90 text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold ml-4"
+          className="bg-primary notranslate hover:bg-primary/90 text-[#00253E] px-8 h-[48px] rounded-[8px] flex items-center gap-2 font-semibold ml-4 v"
         >
           {lang === "de" ? "Weiter" : "Continue"}
           <ChevronsRight className="w-5 h-5" />
