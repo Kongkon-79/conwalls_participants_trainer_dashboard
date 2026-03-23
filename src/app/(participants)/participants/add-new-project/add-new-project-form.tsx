@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { ChevronsRight, Scroll } from "lucide-react";
+import { ChevronsRight, Scroll, X } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { ProjectListsApiResponse } from "../_components/project-list-data-type";
@@ -153,11 +153,10 @@ export default function AddNewProjectForm() {
               <Link href="/participants">
               <button
                    type="button"
-                   className="h-[50px] flex items-center gap-2 bg-primary font-medium leading-normal text-[#00253E] px-8 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02] notranslate"
+                   className="h-[50px] flex items-center gap-2 border border-primary bg-white font-medium leading-normal text-[#00253E] px-6 py-3 rounded-[8px] transition-all duration-200 active:scale-95 hover:bg-gray-50 notranslate"
                  >
-                   {/* {lang === "de" && <ChevronsLeft className="h-4 w-4" />} */}
+                   <X className="h-4 w-4" />
                    {lang === "de" ? "stornieren" : "Cancel"}
-                   {/* {lang !== "de" && <ChevronsRight className="h-4 w-4" />} */}
                  </button>
               </Link>
               <button
@@ -462,6 +461,3 @@ export default function AddNewProjectForm() {
 //     </div>
 //   );
 // }
-
-
-
