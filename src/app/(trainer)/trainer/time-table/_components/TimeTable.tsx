@@ -191,7 +191,10 @@ export default function TimeTable() {
       ) : view === "list" ? (
         <ListView stakeholders={stakeholders} />
       ) : (
-        <GridView stakeholders={stakeholders} kickOffDate={insightEngine?.kickOffDate} />
+        <GridView
+          stakeholders={stakeholders}
+          kickOffDate={insightEngine?.kickOffDate}
+        />
       )}
     </div>
   );
