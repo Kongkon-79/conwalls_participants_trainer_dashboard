@@ -294,7 +294,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
             <label className="text-[20px] font-medium text-[#00253E]">
               <span>
-                {lang === "de" ? "Umgang mit Einwänden" : "Objection Handling"}
+                {lang === "de" ? "Einspruchsbearbeitung" : "Objection Handling"}
               </span>
             </label>
             <HelpIcon text={getStakeholderHelpText("Objection Handling")} />
@@ -317,7 +317,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
             <label className="text-[20px] font-medium text-[#00253E]">
               <span>
-                {lang === "de" ? "Handlungsaufforderung" : "Call to Action"}
+                {lang === "de" ? "Aufruf zum Handeln" : "Call to Action"}
               </span>
             </label>
             <HelpIcon text={getStakeholderHelpText("Call to Action")} />

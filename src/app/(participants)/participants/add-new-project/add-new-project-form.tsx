@@ -17,6 +17,7 @@ import { ProjectListsApiResponse } from "../_components/project-list-data-type";
 import { useRouter } from "next/navigation";
 import { parseCookies } from "nookies";
 import { toast } from "sonner";
+import Link from "next/link";
 
 type ProjectFormValues = {
   projectTitle: string;
@@ -133,7 +134,7 @@ export default function AddNewProjectForm() {
 
                   <FormControl>
                     <Input
-                      className="h-[48px] border border-[#00253E] rounded-[8px] p-4 placeholder:text-[#666666] text-base font-medium text-[#00253E]"
+                      className="h-[48px] border border-[#00253E] rounded-[8px] p-4 placeholder:text-[#666666] text-base font-medium text-[#00253E] "
                       placeholder={
                         lang === "de"
                           ? "Geben Sie den Projektnamen ein"
@@ -148,7 +149,17 @@ export default function AddNewProjectForm() {
               )}
             />
 
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+              <Link href="/participants">
+              <button
+                   type="button"
+                   className="h-[50px] flex items-center gap-2 bg-primary font-medium leading-normal text-[#00253E] px-8 py-4 rounded-[8px] transition-all duration-200 active:scale-95 hover:scale-[1.02] notranslate"
+                 >
+                   {/* {lang === "de" && <ChevronsLeft className="h-4 w-4" />} */}
+                   {lang === "de" ? "stornieren" : "Cancel"}
+                   {/* {lang !== "de" && <ChevronsRight className="h-4 w-4" />} */}
+                 </button>
+              </Link>
               <button
                 type="submit"
                 disabled={isPending}
@@ -164,6 +175,8 @@ export default function AddNewProjectForm() {
                 <ChevronsRight className="h-4 w-4" />
               </button>
             </div>
+
+
           </form>
         </Form>
       </div>
