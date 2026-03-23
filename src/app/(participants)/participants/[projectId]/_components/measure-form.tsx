@@ -95,6 +95,9 @@ export default function MeasureForm({
   const selectedCategory = watch("category");
   const timingValue = watch("timing");
   const typeValue = watch("type");
+  const filteredMeasureTypes =
+    categories.find((category) => category.name === selectedCategory)
+      ?.measureTypes || allMeasureTypes;
 
   useEffect(() => {
     if (initialData) {
@@ -246,7 +249,7 @@ export default function MeasureForm({
               />
             </SelectTrigger>
             <SelectContent className="bg-white notranslate">
-              {allMeasureTypes?.map((t) => (
+              {filteredMeasureTypes?.map((t) => (
                 <SelectItem
                   key={t?.name}
                   value={t?.name}
