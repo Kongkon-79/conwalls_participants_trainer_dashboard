@@ -67,33 +67,19 @@ export default function MeasureForm({
     }
   }, []);
 
-  const getCategoryLabel = (name: string) => {
-    if (lang === "de") {
-      const map: Record<string, string> = {
-        Communication: "Kommunikation",
-        Marketing: "Marketing",
-        Planning: "Planung",
-      };
-      return map[name] || name;
-    }
-    return name;
-  };
-
-  const getTypeLabel = (name: string) => {
-    if (lang === "de") {
-      const map: Record<string, string> = {
-        Email: "E-Mail",
-        Meeting: "Meeting",
-        Workshop: "Workshop",
-      };
-      return map[name] || name;
-    }
-    return name;
-  };
-
   const { data: systemSettings } = useSystemSettings();
   const categories = systemSettings?.categoryTypes || [];
   const allMeasureTypes = systemSettings?.measureTypes || [];
+
+  const getLocalizedLabel = (item?: {
+    name: string;
+    labels?: { en: string; de: string };
+  }) => {
+    if (!item) return "";
+    return lang === "de"
+      ? item.labels?.de || item.labels?.en || item.name
+      : item.labels?.en || item.name;
+  };
 
   const { register, handleSubmit, watch, setValue, reset } =
     useForm<MeasureFormValues>({
@@ -241,7 +227,7 @@ export default function MeasureForm({
             <SelectContent className="bg-white notranslate">
               {categories?.map((c) => (
                 <SelectItem key={c.name} value={c.name} className="notranslate">
-                  {getCategoryLabel(c.name)}
+                  {getLocalizedLabel(c)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -266,7 +252,7 @@ export default function MeasureForm({
                   value={t?.name}
                   className="notranslate"
                 >
-                  {getTypeLabel(t?.name)}
+                  {getLocalizedLabel(t)}
                 </SelectItem>
               ))}
             </SelectContent>

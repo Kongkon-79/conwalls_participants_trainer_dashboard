@@ -1,11 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 
+interface LanguageValues {
+    en: string;
+    de: string;
+}
+
+interface NamedItem {
+    name: string;
+    labels?: LanguageValues;
+}
+
+interface NamedValueItem extends NamedItem {
+    values: LanguageValues;
+}
+
 export interface SystemSettingData {
-    helpTexts: Array<{ name: string; values: { en: string; de: string } }>;
-    roleTypes: Array<{ name: string }>;
-    categoryTypes: Array<{ name: string }>;
-    measureTypes: Array<{ name: string; values: { en: string; de: string } }>;
+    helpTexts: NamedValueItem[];
+    stakeholderHelpTexts: NamedValueItem[];
+    roleTypes: NamedItem[];
+    categoryTypes: NamedItem[];
+    measureTypes: NamedValueItem[];
 }
 
 export function useSystemSettings() {
@@ -26,6 +41,7 @@ export function useSystemSettings() {
             const data = await res.json();
             return data.data?.items?.[0] || {
                 helpTexts: [],
+                stakeholderHelpTexts: [],
                 roleTypes: [],
                 categoryTypes: [],
                 measureTypes: [],

@@ -121,6 +121,22 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
   };
 
   const roleTypes = systemSettings?.roleTypes || [];
+  const stakeholderHelpTexts = systemSettings?.stakeholderHelpTexts || [];
+
+  const getLocalizedLabel = (item?: {
+    name: string;
+    labels?: { en: string; de: string };
+  }) => {
+    if (!item) return "";
+    return lang === "de"
+      ? item.labels?.de || item.labels?.en || item.name
+      : item.labels?.en || item.name;
+  };
+
+  const getStakeholderHelpText = (name: string) => {
+    const helpText = stakeholderHelpTexts.find((item) => item.name === name);
+    return helpText?.values?.[lang as "en" | "de"] || helpText?.values?.en || "";
+  };
 
   return (
     <div
@@ -150,9 +166,9 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             </SelectTrigger>
 
             <SelectContent className="bg-white">
-              {roleTypes.map((r: { name: string }) => (
+              {roleTypes.map((r: { name: string; labels?: { en: string; de: string } }) => (
                 <SelectItem key={r.name} value={r.name}>
-                  <span>{r.name}</span>
+                  <span>{getLocalizedLabel(r)}</span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -166,6 +182,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <label className="text-[20px] font-medium text-[#00253E]">
               <span>{lang === "de" ? "Schmerzpunkt" : "Pain point"}</span>
             </label>
+            <HelpIcon text={getStakeholderHelpText("Pain point")} />
           </div>
 
           <Textarea
@@ -186,6 +203,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
             <label className="text-[20px] font-medium text-[#00253E]">
               <span>{lang === "de" ? "Vorteile" : "Benefits"}</span>
             </label>
+            <HelpIcon text={getStakeholderHelpText("Benefits")} />
           </div>
 
           <Textarea
@@ -201,11 +219,14 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
 
         {/* Trigger Evaluation */}
         <div className="space-y-3 notranslate" translate="no">
-          <label className="text-[20px] font-medium text-[#00253E]">
-            <span>
-              {lang === "de" ? "Trigger-Bewertung" : "Trigger Evaluations"}
-            </span>
-          </label>
+          <div className="flex items-center gap-2">
+            <label className="text-[20px] font-medium text-[#00253E]">
+              <span>
+                {lang === "de" ? "Trigger-Bewertung" : "Trigger Evaluations"}
+              </span>
+            </label>
+            <HelpIcon text={getStakeholderHelpText("Trigger Evaluations")} />
+          </div>
 
           <RadioGroup
             className={`${lang === "de" ? "w-[355px]" : "w-[300px]"} h-[54px]  flex gap-6 border border-primary rounded-[8px] px-4`}
@@ -253,6 +274,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
                   : "Objections / Concerns"}
               </span>
             </label>
+            <HelpIcon text={getStakeholderHelpText("Objections / Concerns")} />
           </div>
 
           <Textarea
@@ -275,6 +297,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
                 {lang === "de" ? "Umgang mit Einwänden" : "Objection Handling"}
               </span>
             </label>
+            <HelpIcon text={getStakeholderHelpText("Objection Handling")} />
           </div>
 
           <Textarea
@@ -297,6 +320,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
                 {lang === "de" ? "Handlungsaufforderung" : "Call to Action"}
               </span>
             </label>
+            <HelpIcon text={getStakeholderHelpText("Call to Action")} />
           </div>
 
           <Textarea
