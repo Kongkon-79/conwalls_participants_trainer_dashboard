@@ -22,6 +22,9 @@ import { useRouter } from "next/navigation";
 
 import AuthImage from "../../../../../public/assets/images/auth_logo.png"
 import { Mail } from "lucide-react";
+import { parseCookies } from "nookies";
+
+const COOKIE_NAME = "googtrans";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -32,6 +35,8 @@ const formSchema = z.object({
 
 
 const ForgotPasswordForm = () => {
+  const cookie = parseCookies()[COOKIE_NAME];
+  const lang = cookie?.split("/")?.[2] || "de";
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -77,10 +82,12 @@ const ForgotPasswordForm = () => {
         </div>
 
         <h3 className="text-xl md:text-2xl lg:text-[32px] font-semibold text-[#00253E] text-left leading-[120%] ">
-          Forgot Password
+          {lang === "de" ? "Passwort vergessen" : "Forgot Password"}
         </h3>
         <p className="text-base font-normal text-[#666666] leading-[150%] text-left pt-1">
-          Enter your email to recover your password
+          {lang === "de"
+            ? "Geben Sie Ihre E-Mail-Adresse ein, um Ihr Passwort wiederherzustellen"
+            : "Enter your email to recover your password"}
         </p>
         <Form {...form}>
           <form
@@ -93,7 +100,7 @@ const ForgotPasswordForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-lg md:text-xl lg:text-2xl font-medium text-[#001B31]">
-                   <Mail className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/> Email Address
+                   <Mail className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/> {lang === "de" ? "E-Mail-Adresse" : "Email Address"}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -114,12 +121,23 @@ const ForgotPasswordForm = () => {
                 }`}
                 type="submit"
               >
-                {isPending ? "Sending..." : "Send OTP"}
+                {isPending
+                  ? lang === "de"
+                    ? "Wird gesendet..."
+                    : "Sending..."
+                  : lang === "de"
+                    ? "OTP senden"
+                    : "Send OTP"}
               </Button>
             </div>
             <div>
               
-              <p className="text-sm font-medium leading-[150%] text-[#666666] text-center pt-2">Back to <Link href="/login" className="text-primary hover:underline">Log In</Link></p>
+              <p className="text-sm font-medium leading-[150%] text-[#666666] text-center pt-2">
+                {lang === "de" ? "Zurück zu " : "Back to "}
+                <Link href="/login" className="text-primary hover:underline">
+                  {lang === "de" ? "Anmelden" : "Log In"}
+                </Link>
+              </p>
               </div>
           </form>
         </Form>

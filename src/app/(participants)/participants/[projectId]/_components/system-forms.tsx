@@ -58,11 +58,11 @@ export default function SystemForms({
   initialData,
 }: SystemFormsProps) {
   const cookie = parseCookies()[COOKIE_NAME];
-  const lang = cookie?.split("/")?.[2] || "en";
+  const lang = cookie?.split("/")?.[2] || "de";
   const session = useSession();
   const token = (session?.data?.user as { accessToken?: string })?.accessToken;
   // const router = useRouter();
-  const [language, setLanguage] = useState<"en" | "de">("en");
+  const [language, setLanguage] = useState<"en" | "de">("de");
 
   useEffect(() => {
     const cookies = parseCookies();

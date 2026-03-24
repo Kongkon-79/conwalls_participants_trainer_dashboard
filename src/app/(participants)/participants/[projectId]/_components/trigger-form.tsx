@@ -55,7 +55,7 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
   const queryClient = useQueryClient();
 
   const cookie = parseCookies()[COOKIE_NAME];
-  const lang = cookie?.split("/")?.[2] || "en";
+  const lang = cookie?.split("/")?.[2] || "de";
 
   const projectId = stakeholder?.insightEngineId;
   const stakeholderId = stakeholder?._id;

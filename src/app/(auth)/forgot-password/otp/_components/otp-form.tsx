@@ -13,10 +13,15 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { parseCookies } from "nookies";
 
 import AuthImage from "../../../../../../public/assets/images/auth_logo.png"
 
+const COOKIE_NAME = "googtrans";
+
 export default function OtpForm() {
+  const cookie = parseCookies()[COOKIE_NAME];
+  const lang = cookie?.split("/")?.[2] || "de";
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -159,10 +164,12 @@ export default function OtpForm() {
         </div>
 
          <h3 className="text-xl md:text-2xl lg:text-[32px] font-semibold text-[#00253E] text-left leading-[120%] ">
-          Enter OTP
+          {lang === "de" ? "OTP eingeben" : "Enter OTP"}
         </h3>
         <p className="text-base font-normal text-[#666666] leading-[150%] text-left pt-1">
-          Enter 6 digit OTP code has send on your email. 
+          {lang === "de"
+            ? "Geben Sie den 6-stelligen OTP-Code ein, der an Ihre E-Mail gesendet wurde."
+            : "Enter 6 digit OTP code has send on your email."}
         </p>
         {/* OTP Input Fields */}
         <div className="flex gap-[10px] md:gap-5 lg:gap-6 w-full justify-center pt-5 md:pt-6">
@@ -189,14 +196,20 @@ export default function OtpForm() {
         {/* Resend OTP */}
         <div className="text-center flex items-center justify-between pt-5 lg:pt-6 pb-5 lg:pb-6">
           <span className=" text-base font-medium leading-[120%] text-[#00253E] tracking-[0%]">
-            Didn&apos;t Receive OTP?{" "}
+            {lang === "de" ? "Keinen OTP erhalten?" : "Didn't Receive OTP?"}{" "}
           </span>
           <button
             onClick={handleResendOtp}
             disabled={resentOtpPending}
             className=" text-base font-medium leading-[120%] text-[#00253E] tracking-[0%] hover:underline"
           >
-            {resentOtpPending ? "Resending..." : "RESEND OTP"}
+            {resentOtpPending
+              ? lang === "de"
+                ? "Wird erneut gesendet..."
+                : "Resending..."
+              : lang === "de"
+                ? "OTP ERNEUT SENDEN"
+                : "RESEND OTP"}
           </button>
         </div>
 
@@ -207,7 +220,13 @@ export default function OtpForm() {
           className="w-full h-[52px] bg-primary rounded-[8px] py-[15px] px-[151px] text-lg font-semibold  leading-[120%] tracking-[0%] text-[#00253E]"
           disabled={isPending}
         >
-          {isPending ? "Verifying..." : "Verify Now"}
+          {isPending
+            ? lang === "de"
+              ? "Wird überprüft..."
+              : "Verifying..."
+            : lang === "de"
+              ? "Jetzt prüfen"
+              : "Verify Now"}
         </button>
       </div>
     </div>

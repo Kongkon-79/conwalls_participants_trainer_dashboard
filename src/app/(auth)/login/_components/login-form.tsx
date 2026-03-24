@@ -45,7 +45,7 @@ const COOKIE_NAME = "googtrans";
 
 const LoginForm = () => {
   const cookie = parseCookies()[COOKIE_NAME];
-  const lang = cookie?.split("/")?.[2] || "en";
+  const lang = cookie?.split("/")?.[2] || "de";
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const session = useSession();

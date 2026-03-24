@@ -23,8 +23,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { parseCookies } from "nookies";
 
 import AuthImage from "../../../../../../../public/assets/images/auth_logo.png"
+
+const COOKIE_NAME = "googtrans";
 
 const formSchema = z
   .object({
@@ -43,6 +46,8 @@ const formSchema = z
 
 
 const ResetPasswordForm = () => {
+  const cookie = parseCookies()[COOKIE_NAME];
+  const lang = cookie?.split("/")?.[2] || "de";
   const [showPassword, setShowPassword] = useState(false);
   const [confirmShowPassword, setConfirmShowPassword] = useState(false);
   const searchParams = useSearchParams();
@@ -99,10 +104,10 @@ const ResetPasswordForm = () => {
       </div>
 
        <h3 className="text-xl md:text-2xl lg:text-[32px] font-semibold text-[#00253E] text-left leading-[120%] ">
-          Reset Password
+          {lang === "de" ? "Passwort zurücksetzen" : "Reset Password"}
         </h3>
         <p className="text-base font-normal text-[#666666] leading-[150%] text-left pt-1">
-          Create a new password
+          {lang === "de" ? "Erstellen Sie ein neues Passwort" : "Create a new password"}
         </p>
 
       <Form {...form}>
@@ -118,7 +123,7 @@ const ResetPasswordForm = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-lg md:text-xl lg:text-2xl font-medium text-[#001B31]">
-                  <LockKeyhole className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/> Create  Password 
+                  <LockKeyhole className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/> {lang === "de" ? "Passwort erstellen" : "Create Password"}
                   </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -152,7 +157,7 @@ const ResetPasswordForm = () => {
             render={({ field }) => (
               <FormItem>
                <FormLabel className="text-lg md:text-xl lg:text-2xl font-medium text-[#001B31]">
-                  <LockKeyhole className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/>Confirm  Password 
+                  <LockKeyhole className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/>{lang === "de" ? "Passwort bestätigen" : "Confirm Password"}
                   </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -213,7 +218,13 @@ const ResetPasswordForm = () => {
                 }`}
               type="submit"
             >
-              {isPending ? "Loading..." : "Continue"}
+              {isPending
+                ? lang === "de"
+                  ? "Wird geladen..."
+                  : "Loading..."
+                : lang === "de"
+                  ? "Weiter"
+                  : "Continue"}
             </Button>
           </div>
         </form>

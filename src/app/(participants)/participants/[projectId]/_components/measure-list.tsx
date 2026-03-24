@@ -27,7 +27,7 @@ export default function MeasureList({
   onOverview,
 }: MeasureListProps) {
    const cookie = parseCookies()[COOKIE_NAME];
-    const lang = cookie?.split("/")?.[2] || "en";
+    const lang = cookie?.split("/")?.[2] || "de";
   const session = useSession()
   const token = (session?.data?.user as { accessToken?: string })?.accessToken
   const queryClient = useQueryClient()

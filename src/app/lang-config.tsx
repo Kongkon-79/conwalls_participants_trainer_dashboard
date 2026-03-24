@@ -11,7 +11,7 @@ const config = {
     // { title: 'Bangla', name: 'bn' },
     
   ],
-  defaultLanguage: 'en',
+  defaultLanguage: 'de',
 };
 
 export default function LangConfig() {

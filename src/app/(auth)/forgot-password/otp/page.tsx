@@ -4,7 +4,7 @@ const OtpPage = () => {
   return (
     <div className="h-screen bg-[linear-gradient(180deg,_#F1FFC5_0%,_#F6FFDA_54.81%,_#FFFFFF_99.04%)]">
       <div className="w-full h-full lg:h-[86%] flex items-center justify-center">
-        <Suspense fallback={<div className="text-center">Loading...</div>}>
+        <Suspense fallback={<div className="text-center">Wird geladen...</div>}>
           <OtpForm />
         </Suspense>
       </div>

@@ -23,7 +23,7 @@ const COOKIE_NAME = "googtrans";
 
 export default function KickOffDateForm({ onNext, projectTitle, initialDate }: KickOffDateFormProps) {
       const cookie = parseCookies()[COOKIE_NAME];
-      const lang = cookie?.split("/")?.[2] || "en";
+      const lang = cookie?.split("/")?.[2] || "de";
     const [date, setDate] = useState<Date | undefined>(initialDate);
 
     const handleSubmit = (e: React.FormEvent) => {

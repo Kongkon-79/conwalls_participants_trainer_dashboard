@@ -77,7 +77,7 @@ export default function RootLayout({
   `;
 
   return (
-    <html lang="en" className={nunito.variable}>
+    <html lang="de" className={nunito.variable}>
       <head>
         <meta name="google" content="notranslate" />
         <Script

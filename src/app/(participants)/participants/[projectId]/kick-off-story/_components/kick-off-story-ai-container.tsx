@@ -20,7 +20,7 @@ const KickOffStoryAiContainer = () => {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
 
-  const [language, setLanguage] = useState<"en" | "de">("en");
+  const [language, setLanguage] = useState<"en" | "de">("de");
 
   const searchParams = useSearchParams();
 
@@ -372,4 +372,3 @@ ${stakeholder?.callToAction}
 };
 
 export default KickOffStoryAiContainer;
-

@@ -19,7 +19,7 @@ const TriggerAiContainer = () => {
   const projectId = searchParams.get("projectId");
   const stakeholderId = searchParams.get("stakeholderId");
 
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>("de");
   const { data: session } = useSession();
   const accessToken = session?.user?.accessToken;
 
