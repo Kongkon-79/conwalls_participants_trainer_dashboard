@@ -15,11 +15,15 @@ interface NamedValueItem extends NamedItem {
     values: LanguageValues;
 }
 
+interface CategoryItem extends NamedItem {
+    measureTypes?: NamedValueItem[];
+}
+
 export interface SystemSettingData {
     helpTexts: NamedValueItem[];
     stakeholderHelpTexts: NamedValueItem[];
     roleTypes: NamedItem[];
-    categoryTypes: NamedItem[];
+    categoryTypes: CategoryItem[];
     measureTypes: NamedValueItem[];
 }
 
