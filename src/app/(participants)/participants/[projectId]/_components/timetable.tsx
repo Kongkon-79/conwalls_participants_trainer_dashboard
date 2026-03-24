@@ -11,6 +11,7 @@ import {
   User,
   ChevronLeft,
 } from 'lucide-react'
+import type { Html2PdfOptions } from 'html2pdf.js'
 import { Stakeholder } from './stakeholder-types'
 import { Measure } from './measure-types'
 import { parseCookies } from 'nookies'
@@ -37,6 +38,8 @@ export default function Timetable({
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map())
+  const exportSectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map())
+  const isListView = viewMode === 'list'
 
   const { data, isLoading } = useQuery({
     queryKey: ['stakeholders-measures', projectId],
@@ -135,6 +138,49 @@ export default function Timetable({
   ) => {
     if (typeof window === 'undefined') return
 
+    if (mode === 'grid') {
+      const exportElement = exportSectionRefs.current.get(stakeholderId)
+      if (!exportElement) return
+
+      const fonts = (document as unknown as { fonts?: { ready: Promise<void> } })
+        .fonts
+      if (fonts?.ready) await fonts.ready
+
+      const { default: html2pdf } = await import('html2pdf.js')
+
+      const fullWidth = exportElement.scrollWidth
+      const fullHeight = exportElement.scrollHeight
+
+      const opt = {
+        margin: 0,
+        filename: `${fileName}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: fullWidth,
+          height: fullHeight,
+          windowWidth: fullWidth,
+          windowHeight: fullHeight,
+          scrollX: 0,
+          scrollY: 0,
+        },
+        jsPDF: {
+          unit: 'px' as const,
+          format: [Math.ceil(fullWidth / 2), Math.ceil(fullHeight / 2)],
+          orientation: 'landscape' as const,
+        },
+        pagebreak: { mode: ['avoid-all'] as const },
+      }
+
+      await html2pdf()
+        .set(opt as unknown as Html2PdfOptions)
+        .from(exportElement)
+        .save()
+      return
+    }
+
     const element = sectionRefs.current.get(stakeholderId)
     if (!element) return
 
@@ -154,19 +200,18 @@ export default function Timetable({
 
     const exportBtn = clone.querySelector('[data-export-btn="true"]')
     if (exportBtn) {
-      ;(exportBtn as HTMLDivElement).style.visibility = 'hidden'
-      ;(exportBtn as HTMLDivElement).style.pointerEvents = 'none'
+      ;(exportBtn as HTMLDivElement).style.display = 'none'
     }
 
     const pdfProjectHeader = document.createElement('div')
     pdfProjectHeader.style.display = 'block'
-    pdfProjectHeader.style.margin = mode === 'grid' ? '0 0 24px' : '0 0 20px'
+    pdfProjectHeader.style.margin = '0 0 20px'
     pdfProjectHeader.style.padding = '0 0 16px'
     pdfProjectHeader.style.borderBottom = '1px solid #d7dde3'
 
     const pdfProjectTitle = document.createElement('span')
     pdfProjectTitle.textContent = projectTitle || 'Untitled Project'
-    pdfProjectTitle.style.fontSize = mode === 'grid' ? '24px' : '22px'
+    pdfProjectTitle.style.fontSize = '22px'
     pdfProjectTitle.style.fontWeight = '800'
     pdfProjectTitle.style.lineHeight = '1.2'
     pdfProjectTitle.style.color = '#00253E'
@@ -179,6 +224,10 @@ export default function Timetable({
 
     if (header) {
       header.style.marginBottom = '24px'
+      header.style.justifyContent = 'flex-start'
+      header.style.alignItems = 'center'
+      header.style.gap = '16px'
+      header.style.flexWrap = 'wrap'
     }
 
     const stakeholderBadge = clone.querySelector(
@@ -194,7 +243,7 @@ export default function Timetable({
       stakeholderBadge.style.fontSize = '16px'
       stakeholderBadge.style.fontWeight = '700'
       stakeholderBadge.style.lineHeight = '1.1'
-      stakeholderBadge.style.padding = '10px 16px'
+      stakeholderBadge.style.padding = '10px 18px'
       stakeholderBadge.style.borderTop = '1px solid #B5CC2E'
       stakeholderBadge.style.borderBottom = '1px solid #B5CC2E'
       stakeholderBadge.style.borderLeft = '4px solid #B5CC2E'
@@ -202,6 +251,12 @@ export default function Timetable({
       stakeholderBadge.style.borderRadius = '8px'
       stakeholderBadge.style.boxSizing = 'border-box'
       stakeholderBadge.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)'
+      stakeholderBadge.style.width = 'fit-content'
+      stakeholderBadge.style.minWidth = '260px'
+      stakeholderBadge.style.maxWidth = 'none'
+      stakeholderBadge.style.overflow = 'visible'
+      stakeholderBadge.style.whiteSpace = 'nowrap'
+      stakeholderBadge.style.flexShrink = '0'
     }
 
     const stakeholderIcon = clone.querySelector(
@@ -217,6 +272,19 @@ export default function Timetable({
       stakeholderIcon.style.flexShrink = '0'
     }
 
+    const stakeholderBadgeText = stakeholderBadge?.querySelector(
+      'span',
+    ) as HTMLSpanElement | null
+
+    if (stakeholderBadgeText) {
+      stakeholderBadgeText.style.whiteSpace = 'nowrap'
+      stakeholderBadgeText.style.overflow = 'visible'
+      stakeholderBadgeText.style.textOverflow = 'clip'
+      stakeholderBadgeText.style.display = 'inline-block'
+      stakeholderBadgeText.style.maxWidth = 'none'
+      stakeholderBadgeText.style.flexShrink = '0'
+    }
+
     const pills = clone.querySelectorAll('[data-pdf-category-pill="true"]')
     pills.forEach(node => {
       const pill = node as HTMLSpanElement
@@ -227,12 +295,12 @@ export default function Timetable({
       pill.style.justifyContent = 'center'
       pill.style.padding = '4px 14px'
       pill.style.borderRadius = '9999px'
-      pill.style.fontSize = mode === 'list' ? '12px' : '11px'
+      pill.style.fontSize = '12px'
       pill.style.fontWeight = '700'
       pill.style.lineHeight = '1.1'
-      pill.style.letterSpacing = mode === 'list' ? '0.04em' : '0'
+      pill.style.letterSpacing = '0.04em'
       pill.style.whiteSpace = 'nowrap'
-      pill.style.marginTop = mode === 'list' ? '8px' : '2px'
+      pill.style.marginTop = '8px'
 
       if (category.includes('communication')) {
         pill.style.backgroundColor = '#B5CC2E'
@@ -249,52 +317,17 @@ export default function Timetable({
       }
     })
 
-    if (mode === 'grid') {
-      const gridShell = clone.querySelector(
-        '[data-pdf-grid-shell="true"]',
-      ) as HTMLDivElement | null
-      const gridViewport = clone.querySelector(
-        '[data-pdf-grid-viewport="true"]',
-      ) as HTMLDivElement | null
-      const gridCanvas = clone.querySelector(
-        '[data-pdf-grid-canvas="true"]',
-      ) as HTMLDivElement | null
-
-      if (gridShell) {
-        gridShell.style.overflow = 'visible'
-        gridShell.style.width = 'fit-content'
-        gridShell.style.minWidth = '100%'
-      }
-
-      if (gridViewport) {
-        gridViewport.style.overflow = 'visible'
-      }
-
-      if (gridCanvas) {
-        gridCanvas.style.minWidth = '0'
-        gridCanvas.style.margin = '0 auto'
-      }
-    }
-
     const fullWidth =
-      mode === 'grid'
-        ? (() => {
-            const gridShell = clone.querySelector(
-              '[data-pdf-grid-shell="true"]',
-            ) as HTMLDivElement | null
-
-            return (
-              gridShell?.scrollWidth ||
-              gridShell?.getBoundingClientRect().width ||
-              element.scrollWidth ||
-              element.getBoundingClientRect().width
-            )
-          })()
-        : element.scrollWidth ||
-          element.offsetWidth ||
-          element.getBoundingClientRect().width
+      element.scrollWidth ||
+      element.offsetWidth ||
+      element.getBoundingClientRect().width
+    const fullHeight =
+      element.scrollHeight ||
+      element.offsetHeight ||
+      element.getBoundingClientRect().height
 
     clone.style.width = `${fullWidth}px`
+    clone.style.minHeight = `${fullHeight}px`
 
     const wrapper = document.createElement('div')
     wrapper.style.position = 'fixed'
@@ -302,25 +335,27 @@ export default function Timetable({
     wrapper.style.top = '0'
     wrapper.style.background = '#ffffff'
     wrapper.style.width = `${fullWidth}px`
+    wrapper.style.minHeight = `${fullHeight}px`
     wrapper.style.overflow = 'visible'
     wrapper.appendChild(clone)
     document.body.appendChild(wrapper)
 
     const pdfUnit = 'mm' as const
-    const pdfFormat: 'a3' | 'a4' = mode === 'grid' ? 'a3' : 'a4'
-    const orientation: 'landscape' | 'portrait' =
-      mode === 'grid' ? 'landscape' : 'portrait'
+    const pdfFormat = 'a4' as const
+    const orientation = 'portrait' as const
 
     const opt = {
-      margin: mode === 'grid' ? 6 : 8,
+      margin: 8,
       filename: `${fileName}.pdf`,
       image: { type: 'jpeg' as const, quality: 0.98 },
       html2canvas: {
-        scale: mode === 'grid' ? 3 : 2,
+        scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
         width: fullWidth,
+        height: fullHeight,
         windowWidth: fullWidth,
+        windowHeight: fullHeight,
         scrollX: 0,
         scrollY: 0,
       },
@@ -359,6 +394,223 @@ export default function Timetable({
         .replace(/\//g, '.')
     : '08.02.2026'
 
+  const renderHiddenGridExport = (sh: Stakeholder & { measures: Measure[] }) => {
+    const sortedMeasures = getSortedMeasures(sh.measures)
+    if (!sortedMeasures.length) return null
+
+    const maxWeeksPre =
+      sortedMeasures
+        .filter(m => m.timing === 'pre')
+        .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
+    const maxWeeksPost =
+      sortedMeasures
+        .filter(m => m.timing === 'post')
+        .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
+
+    const timelineStartBuffer = Math.max(2, maxWeeksPre + 2)
+    const timelineEndBuffer = Math.max(2, maxWeeksPost + 2)
+    const totalWeeks = timelineStartBuffer + timelineEndBuffer
+    const weekWidth = 56
+    const timelineWidth = Math.max(640, totalWeeks * weekWidth)
+    const canvasSidePadding = 140
+    const canvasWidth = timelineWidth + canvasSidePadding * 2
+    const splitLeftPx =
+      canvasSidePadding +
+      (timelineStartBuffer / totalWeeks) * timelineWidth
+    const preCount = sortedMeasures.filter(m => m.timing === 'pre').length
+    const postCount = sortedMeasures.filter(m => m.timing === 'post').length
+    const upperRows = Math.max(
+      1,
+      Math.ceil(preCount / 2),
+      Math.ceil(postCount / 2),
+    )
+    const lowerRows = Math.max(
+      1,
+      Math.ceil(preCount / 2),
+      Math.ceil(postCount / 2),
+    )
+    const rowGap = 40
+    const cardHeight = 56
+    const topBase = 12
+    const timelineTop = 182 + Math.max(0, upperRows - 1) * rowGap
+    const bottomBase = timelineTop + 92
+    const canvasHeight =
+      bottomBase + cardHeight + Math.max(0, lowerRows - 1) * rowGap + 20
+
+    return (
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed left-[-9999px] top-0 z-[-1]"
+      >
+        <div
+          ref={el => {
+            exportSectionRefs.current.set(sh._id, el)
+          }}
+          className="inline-block bg-white p-8 font-sans"
+        >
+          <div className="mb-6 border-b border-[#d7dde3] pb-4">
+            <span className="text-[24px] font-extrabold leading-[1.2] text-[#00253E]">
+              {projectTitle || 'Untitled Project'}
+            </span>
+          </div>
+
+          <div className="mb-6 flex items-center justify-start">
+            <div className="inline-flex min-w-[280px] items-center gap-3 rounded-[8px] border border-x-[4px] border-[#B5CC2E] bg-white px-5 py-3 shadow-sm">
+              <User className="h-5 w-5 flex-shrink-0 text-[#B5CC2E]" />
+              <span className="whitespace-nowrap text-[16px] font-bold text-[#00253E]">
+                {sh.name}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-gray-50 bg-white p-6 shadow-sm">
+            <div
+              className="relative"
+              style={{ height: `${canvasHeight}px`, width: `${canvasWidth}px` }}
+            >
+              <div
+                className="absolute h-[48px] overflow-hidden border border-[#d7dde3]"
+                style={{
+                  left: `${canvasSidePadding}px`,
+                  top: `${timelineTop}px`,
+                  width: `${timelineWidth}px`,
+                }}
+              >
+                <div
+                  className="absolute inset-y-0 left-0 bg-[#DDB3C1]"
+                  style={{
+                    width: `${(timelineStartBuffer / totalWeeks) * timelineWidth}px`,
+                  }}
+                ></div>
+                <div
+                  className="absolute inset-y-0 right-0 bg-[#9EB7CB]"
+                  style={{
+                    width: `${(timelineEndBuffer / totalWeeks) * timelineWidth}px`,
+                  }}
+                ></div>
+              </div>
+
+              <div
+                className="absolute h-[78px]"
+                style={{
+                  left: `${canvasSidePadding}px`,
+                  top: `${timelineTop - 32}px`,
+                  width: `${timelineWidth}px`,
+                }}
+              >
+                {Array.from({ length: totalWeeks + 1 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute top-0 h-[50px] w-px bg-[#23445f]/65"
+                    style={{ left: `${(i / totalWeeks) * timelineWidth}px` }}
+                  ></div>
+                ))}
+              </div>
+
+              <div
+                className="absolute z-30 flex -translate-x-1/2 flex-col items-center"
+                style={{
+                  left: `${splitLeftPx}px`,
+                  top: `${timelineTop - 73}px`,
+                }}
+              >
+                <div className="h-[56px] w-[3px] bg-[#A91D54]"></div>
+                <div className="mt-[-1px] flex flex-col items-center bg-white px-2 text-center">
+                  <div className="flex items-center gap-1 text-[24px] font-black leading-none text-[#A91D54]">
+                    <span className="h-[13px] w-[13px] rounded-full bg-[#A91D54]"></span>
+                    <span className="text-[20px] text-[#00253E]">Start</span>
+                  </div>
+                  <span className="mt-1 whitespace-nowrap text-[12px] font-bold text-[#00253E]">
+                    {formattedStartDate}
+                  </span>
+                </div>
+                <div className="h-[120px] w-[3px] bg-[#A91D54]"></div>
+              </div>
+
+              {sortedMeasures.map((m, idx) => {
+                const isPre = m.timing === 'pre'
+                const weekPos = isPre
+                  ? timelineStartBuffer - (m.startWeeks || 0)
+                  : timelineStartBuffer + (m.startWeeks || 0)
+                const xPos =
+                  canvasSidePadding + (weekPos / totalWeeks) * timelineWidth
+
+                const orderWithinSide = sortedMeasures
+                  .slice(0, idx + 1)
+                  .filter(item => item.timing === m.timing).length - 1
+                const isNearStart = (m.startWeeks || 0) <= 2
+                const nearStartCountWithinSide = sortedMeasures
+                  .slice(0, idx + 1)
+                  .filter(
+                    item =>
+                      item.timing === m.timing && (item.startWeeks || 0) <= 2,
+                  ).length
+                const adjustedOrder = isPre
+                  ? orderWithinSide
+                  : Math.max(0, orderWithinSide - nearStartCountWithinSide)
+                const isAbove = isPre
+                  ? orderWithinSide % 2 === 0
+                  : isNearStart
+                    ? false
+                    : adjustedOrder % 2 === 0
+                const rowOffset = Math.floor(orderWithinSide / 2)
+                const yPos = isAbove
+                  ? topBase + rowOffset * rowGap
+                  : bottomBase + rowOffset * rowGap
+                const connectorHeight = isAbove
+                  ? timelineTop - (yPos + cardHeight)
+                  : yPos - (timelineTop + 48)
+
+                return (
+                  <div
+                    key={m._id}
+                    className="absolute z-20 -translate-x-1/2"
+                    style={{
+                      left: `${xPos}px`,
+                      top: `${yPos}px`,
+                    }}
+                  >
+                    <div
+                      className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#5C7286]/80 ${
+                        isAbove ? 'top-full' : 'bottom-full'
+                      }`}
+                      style={{
+                        height: `${Math.max(connectorHeight, 24)}px`,
+                      }}
+                    ></div>
+
+                    <div className="flex min-w-[180px] max-w-[220px] gap-3 bg-white px-1 py-1 text-[#00253E]">
+                      <div
+                        className="mt-1 h-[18px] w-[18px] flex-shrink-0 rounded-none"
+                        style={{
+                          backgroundColor: getCategoryColor(m.category),
+                        }}
+                      ></div>
+                      <div className="flex flex-col leading-tight">
+                        <span className="text-[15px] font-extrabold">
+                          {m.type}
+                        </span>
+                        <span className="mt-0.5 text-[12px] font-semibold text-[#00253E]">
+                          {m.name}
+                        </span>
+                        <span className="mt-1 text-[11px] font-bold text-[#00253E]">
+                          {m.startWeeks} {m.startWeeks === 1 ? 'Week' : 'Weeks'}
+                        </span>
+                        <span className="mt-0.5 text-[11px] font-bold text-[#00253E]/80">
+                          {formatMeasureDate(m)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-10 pb-10 w-full max-w-full mx-auto overflow-x-hidden font-sans">
       <div className="flex flex-col gap-6 pb-4">
@@ -390,7 +642,7 @@ export default function Timetable({
               <button
                 onClick={() => setViewMode('grid')}
                 className={`flex-1 rounded-md text-[14px] font-bold transition-colors px-2 flex items-center justify-center gap-2 ${
-                  viewMode === 'grid'
+                  !isListView
                     ? 'bg-white shadow-sm text-[#00253E]'
                     : 'text-gray-500 hover:text-[#00253E]'
                 }`}
@@ -401,7 +653,7 @@ export default function Timetable({
               <button
                 onClick={() => setViewMode('list')}
                 className={`flex-1 rounded-md text-[14px] font-bold px-2 transition-colors flex items-center justify-center gap-2 ${
-                  viewMode === 'list'
+                  isListView
                     ? 'bg-white shadow-sm text-[#00253E]'
                     : 'text-gray-500 hover:text-[#00253E]'
                 }`}
@@ -438,100 +690,100 @@ export default function Timetable({
       </div>
 
       {stakeholdersWithMeasures.map(sh => (
-        <div
-          key={sh._id}
-          ref={el => {
-            sectionRefs.current.set(sh._id, el)
-          }}
-          className="mb-12 block w-full max-w-full overflow-hidden print:break-inside-avoid"
-        >
+        <React.Fragment key={sh._id}>
+          {renderHiddenGridExport(sh)}
           <div
-            data-header-row="true"
-            className="mb-6 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+            ref={el => {
+              sectionRefs.current.set(sh._id, el)
+            }}
+            className="mb-12 block w-full max-w-full overflow-hidden print:break-inside-avoid"
           >
-            <div className="flex min-w-0 items-center">
-              <div
-                data-pdf-stakeholder-badge="true"
-                className="flex min-h-[44px] min-w-0 items-center gap-3 rounded-[8px] border border-x-[4px] border-[#B5CC2E] bg-white px-4 py-2 shadow-sm sm:px-6"
-              >
-                <div data-pdf-stakeholder-icon="true">
-                  <User className="w-5 h-5 text-[#B5CC2E]" />
-                </div>
-                <span className="truncate text-[16px] font-bold text-[#00253E]">
-                  {sh.name}
-                </span>
-              </div>
-            </div>
-
             <div
-              data-export-btn="true"
-              className="flex items-center gap-3 print:hidden"
+              data-header-row="true"
+              className="mb-6 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
             >
-              <button
-                onClick={() =>
-                  exportStakeholderPdf(
-                    sh._id,
-                    `${viewMode}-view-${sh.name}`,
-                    viewMode,
-                  )
-                }
-                className="h-[44px] px-6 bg-white border border-[#B5CC2E] rounded text-[14px] font-bold text-gray-700 flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                <Download className="w-5 h-5" />
-                {lang === 'de' ? 'PDF exportieren' : 'Export PDF'}
-              </button>
-            </div>
-          </div>
-
-          {!sh.measures || sh.measures.length === 0 ? (
-            <p className="text-gray-400 text-center py-12 text-[16px] italic">
-              No measures added for this stakeholder.
-            </p>
-          ) : viewMode === 'list' ? (
-            <div className="flex flex-col gap-4">
-              {getSortedMeasures(sh.measures).map(m => (
+              <div className="flex min-w-0 items-center">
                 <div
-                  key={m._id}
-                  className="bg-[#F2F2F2] border-l-[4px] border-[#BADA55] rounded-xl p-6 flex flex-row items-center relative overflow-hidden shadow-sm"
+                  data-pdf-stakeholder-badge="true"
+                  className="flex min-h-[44px] min-w-0 items-center gap-3 rounded-[8px] border border-x-[4px] border-[#B5CC2E] bg-white px-4 py-2 shadow-sm sm:px-6"
                 >
-                  <div className="w-[140px] text-[16px] md:text-xl font-semibold text-black">
-                    {lang === 'de'
-                      ? `Woche ${m.startWeeks}`
-                      : `Week ${m.startWeeks}`}
+                  <div data-pdf-stakeholder-icon="true">
+                    <User className="w-5 h-5 text-[#B5CC2E]" />
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="text-[20px] font-bold text-black">
-                      {m.type} - {m.name}
-                    </div>
-                    <div className="text-[13px] font-semibold text-[#00253E]/70">
-                      {formatMeasureDate(m)}
-                    </div>
-                    <div className="flex">
-                      <span
-                        data-pdf-category-pill="true"
-                        data-category-name={m.category || ''}
-                        className="inline-flex px-5 py-1 rounded-full text-[12px] font-bold tracking-widest"
-                        style={{
-                          backgroundColor: getCategoryColor(m.category),
-                          color: getCategoryTextColor(m.category),
-                        }}
-                      >
-                        {m.category?.toUpperCase() || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
+                  <span className="truncate text-[16px] font-bold text-[#00253E]">
+                    {sh.name}
+                  </span>
                 </div>
-              ))}
+              </div>
 
-              <div className="bg-[#F8F9FA] border border-gray-100 rounded-xl p-6 mt-2 flex items-center text-[20px] font-bold text-[#00253E] shadow-sm">
-                {/* <span className="mr-3">Change Ambassador :</span> */}
-                <span className="text-[#3e4042] font-medium text-[16px] notranslate">
-                  Created with Insight engine by Conwalls
-                </span>
+              <div
+                data-export-btn="true"
+                className="flex items-center gap-3 print:hidden"
+              >
+                <button
+                  onClick={() =>
+                    exportStakeholderPdf(
+                      sh._id,
+                      `${viewMode}-view-${sh.name}`,
+                      viewMode,
+                    )
+                  }
+                  className="h-[44px] px-6 bg-white border border-[#B5CC2E] rounded text-[14px] font-bold text-gray-700 flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
+                >
+                  <Download className="w-5 h-5" />
+                  {lang === 'de' ? 'PDF exportieren' : 'Export PDF'}
+                </button>
               </div>
             </div>
-          ) : (
-            (() => {
+
+            {!sh.measures || sh.measures.length === 0 ? (
+              <p className="text-gray-400 text-center py-12 text-[16px] italic">
+                No measures added for this stakeholder.
+              </p>
+            ) : isListView ? (
+              <div className="flex flex-col gap-4">
+                {getSortedMeasures(sh.measures).map(m => (
+                  <div
+                    key={m._id}
+                    className="bg-[#F2F2F2] border-l-[4px] border-[#BADA55] rounded-xl p-6 flex flex-row items-center relative overflow-hidden shadow-sm"
+                  >
+                    <div className="w-[140px] text-[16px] md:text-xl font-semibold text-black">
+                      {lang === 'de'
+                        ? `Woche ${m.startWeeks}`
+                        : `Week ${m.startWeeks}`}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="text-[20px] font-bold text-black">
+                        {m.type} - {m.name}
+                      </div>
+                      <div className="text-[13px] font-semibold text-[#00253E]/70">
+                        {formatMeasureDate(m)}
+                      </div>
+                      <div className="flex">
+                        <span
+                          data-pdf-category-pill="true"
+                          data-category-name={m.category || ''}
+                          className="inline-flex px-5 py-1 rounded-full text-[12px] font-bold tracking-widest"
+                          style={{
+                            backgroundColor: getCategoryColor(m.category),
+                            color: getCategoryTextColor(m.category),
+                          }}
+                        >
+                          {m.category?.toUpperCase() || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-[#F8F9FA] border border-gray-100 rounded-xl p-6 mt-2 flex items-center text-[20px] font-bold text-[#00253E] shadow-sm">
+                  <span className="text-[#3e4042] font-medium text-[16px] notranslate">
+                    Created with Insight engine by Conwalls
+                  </span>
+                </div>
+              </div>
+            ) : (
+              (() => {
               const sortedMeasures = getSortedMeasures(sh.measures)
               const maxWeeksPre =
                 sortedMeasures
@@ -582,17 +834,20 @@ export default function Timetable({
               return (
                 <div
                   data-pdf-grid-shell="true"
-                  className="relative w-full max-w-full overflow-hidden rounded-xl border border-gray-50 bg-white px-2 py-4 shadow-sm sm:px-4 lg:px-6 lg:py-6"
+                  className="relative w-full max-w-full overflow-hidden rounded-xl border border-gray-50 bg-white px-2 py-4 shadow-sm print:overflow-visible sm:px-4 lg:px-6 lg:py-6"
                 >
                   <div
                     data-pdf-grid-viewport="true"
                     className="w-full max-w-full overflow-x-auto overflow-y-hidden pb-4 print:overflow-visible [overscroll-behavior-x:contain] [-webkit-overflow-scrolling:touch]"
                   >
                     <div
-                      data-pdf-grid-canvas="true"
-                      className="relative inline-block print:min-w-0"
-                      style={{ height: `${canvasHeight}px`, width: `${canvasWidth}px` }}
+                      className="min-w-max"
                     >
+                      <div
+                        data-pdf-grid-canvas="true"
+                        className="relative print:min-w-0"
+                        style={{ height: `${canvasHeight}px`, width: `${canvasWidth}px` }}
+                      >
                       <div
                         className="absolute h-[48px] overflow-hidden border border-[#d7dde3]"
                         style={{
@@ -734,13 +989,15 @@ export default function Timetable({
                           </div>
                         )
                       })}
+                      </div>
                     </div>
                   </div>
                 </div>
               )
             })()
           )}
-        </div>
+          </div>
+        </React.Fragment>
       ))}
     </div>
   )

@@ -96,7 +96,7 @@ export default function InsightEnginePage() {
   }
 
   return (
-    <div className=" mx-auto py-6 px-4 w-full">
+    <div className="mx-auto w-full max-w-full min-w-0 overflow-x-hidden px-4 py-6">
       <StepNavigation
         currentStep={activeTabId}
         steps={displaySteps}
