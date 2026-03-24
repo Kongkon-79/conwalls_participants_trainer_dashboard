@@ -30,8 +30,8 @@ export default function Timetable({
   kickOffDate,
   onBack,
 }: TimetableProps) {
-    const cookie = parseCookies()[COOKIE_NAME];
-      const lang = cookie?.split("/")?.[2] || "en";
+  const cookie = parseCookies()[COOKIE_NAME]
+  const lang = cookie?.split('/')?.[2] || 'en'
   const session = useSession()
   const token = (session?.data?.user as { accessToken?: string })?.accessToken
 
@@ -93,6 +93,33 @@ export default function Timetable({
     return '#FFFFFF'
   }
 
+  const getSortedMeasures = (measures: Measure[] = []) =>
+    [...measures].sort((a, b) => {
+      const timingOrder = { post: 0, pre: 1 }
+      const timingDiff =
+        timingOrder[a.timing as keyof typeof timingOrder] -
+        timingOrder[b.timing as keyof typeof timingOrder]
+
+      if (timingDiff !== 0) return timingDiff
+
+      return (a.startWeeks || 0) - (b.startWeeks || 0)
+    })
+
+  const formatMeasureDate = (date?: string) => {
+    if (!date) return formattedStartDate
+
+    const parsedDate = new Date(date)
+    if (Number.isNaN(parsedDate.getTime())) return formattedStartDate
+
+    return parsedDate
+      .toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+      .replace(/\//g, '.')
+  }
+
   const exportStakeholderPdf = async (
     stakeholderId: string,
     fileName: string,
@@ -111,23 +138,23 @@ export default function Timetable({
 
     const clone = element.cloneNode(true) as HTMLDivElement
     clone.style.background = '#ffffff'
-    clone.style.padding = '16px'
+    clone.style.padding = '0'
     clone.style.margin = '0'
     clone.style.overflow = 'visible'
     clone.style.maxWidth = 'none'
 
     const exportBtn = clone.querySelector('[data-export-btn="true"]')
-    if (exportBtn) exportBtn.remove()
+    if (exportBtn) {
+      ;(exportBtn as HTMLDivElement).style.visibility = 'hidden'
+      ;(exportBtn as HTMLDivElement).style.pointerEvents = 'none'
+    }
 
     const header = clone.querySelector(
       '[data-header-row="true"]',
     ) as HTMLDivElement | null
 
     if (header) {
-      header.style.justifyContent = 'flex-start'
-      header.style.alignItems = 'center'
-      header.style.gap = '12px'
-      header.style.marginBottom = '16px'
+      header.style.marginBottom = '24px'
     }
 
     const stakeholderBadge = clone.querySelector(
@@ -198,9 +225,45 @@ export default function Timetable({
       }
     })
 
+    if (mode === 'grid') {
+      const gridShell = clone.querySelector(
+        '[data-pdf-grid-shell="true"]',
+      ) as HTMLDivElement | null
+      const gridViewport = clone.querySelector(
+        '[data-pdf-grid-viewport="true"]',
+      ) as HTMLDivElement | null
+      const gridCanvas = clone.querySelector(
+        '[data-pdf-grid-canvas="true"]',
+      ) as HTMLDivElement | null
+
+      if (gridShell) {
+        gridShell.style.overflow = 'visible'
+      }
+
+      if (gridViewport) {
+        gridViewport.style.overflow = 'visible'
+      }
+
+      if (gridCanvas) {
+        gridCanvas.style.minWidth = '0'
+        gridCanvas.style.margin = '0 auto'
+      }
+    }
+
     const fullWidth =
       mode === 'grid'
-        ? element.scrollWidth || element.getBoundingClientRect().width
+        ? (() => {
+            const gridShell = clone.querySelector(
+              '[data-pdf-grid-shell="true"]',
+            ) as HTMLDivElement | null
+
+            return (
+              gridShell?.scrollWidth ||
+              gridShell?.getBoundingClientRect().width ||
+              element.scrollWidth ||
+              element.getBoundingClientRect().width
+            )
+          })()
         : element.scrollWidth ||
           element.offsetWidth ||
           element.getBoundingClientRect().width
@@ -260,26 +323,6 @@ export default function Timetable({
 
   const stakeholdersWithMeasures = data || []
 
-  const maxWeeksPre = stakeholdersWithMeasures.reduce((max, sh) => {
-    const shMax =
-      sh.measures
-        ?.filter(m => m.timing === 'pre')
-        .reduce((m, m2) => Math.max(m, m2.startWeeks), 0) || 0
-    return Math.max(max, shMax)
-  }, 0)
-
-  const maxWeeksPost = stakeholdersWithMeasures.reduce((max, sh) => {
-    const shMax =
-      sh.measures
-        ?.filter(m => m.timing === 'post')
-        .reduce((m, m2) => Math.max(m, m2.startWeeks), 0) || 0
-    return Math.max(max, shMax)
-  }, 0)
-
-  const timelineStartBuffer = Math.max(1, maxWeeksPre + 2)
-  const timelineEndBuffer = Math.max(1, maxWeeksPost + 2)
-  const totalWeeks = timelineStartBuffer + timelineEndBuffer
-
   const formattedStartDate = kickOffDate
     ? new Date(kickOffDate)
         .toLocaleDateString('en-GB', {
@@ -300,15 +343,19 @@ export default function Timetable({
               className="flex items-center gap-1 text-[14px] text-gray-500 hover:text-[#00253E] transition-colors mb-2 print:hidden"
             >
               <ChevronLeft className="w-4 h-4" />
-              {lang === "de" ? "Zurück" : "Go Back"}
+              {lang === 'de' ? 'Zurück' : 'Go Back'}
             </button>
             <h2 className="text-[22px] font-bold text-[#00253E]">
-               {lang === "de" ? "Projektliste" : "Project List"}
+              {lang === 'de' ? 'Projektliste' : 'Project List'}
             </h2>
             <div className="flex items-center gap-2 text-[15px] text-gray-500">
-              <span className='notranslate'>{projectTitle || 'New ERP System'}</span>
+              <span className="notranslate">
+                {projectTitle || 'New ERP System'}
+              </span>
               <span className="text-gray-400">&gt;</span>
-              <span className="text-[#00253E] font-medium notranslate">{lang === "de" ? "Timetable" : "Time Table"}</span>
+              <span className="text-[#00253E] font-medium notranslate">
+                {lang === 'de' ? 'Timetable' : 'Time Table'}
+              </span>
             </div>
           </div>
 
@@ -323,7 +370,7 @@ export default function Timetable({
                 }`}
               >
                 <Grid className="w-5 h-5" />
-                {lang === "de" ? "Rasteransicht" : "Grid View"}
+                {lang === 'de' ? 'Rasteransicht' : 'Grid View'}
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -334,26 +381,26 @@ export default function Timetable({
                 }`}
               >
                 <List className="w-5 h-5" />
-                
-                 {lang === "de" ? "Listenansicht" : "List View"}
+
+                {lang === 'de' ? 'Listenansicht' : 'List View'}
               </button>
             </div>
 
             <div className="flex flex-col gap-4 text-[15px] font-bold pt-1">
               <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#B5CC2E] rounded-sm"></span>
-                
-                 {lang === "de" ? "Kommunikation" : "Communication"}
+
+                {lang === 'de' ? 'Kommunikation' : 'Communication'}
               </div>
               <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#00253E] rounded-sm"></span>
-                
-                 {lang === "de" ? "Einbindung" : "Involvement"}
+
+                {lang === 'de' ? 'Einbindung' : 'Involvement'}
               </div>
               <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#A91D54] rounded-sm"></span>
-                
-                 {lang === "de" ? "Anerkennung" : "Recognition"}
+
+                {lang === 'de' ? 'Anerkennung' : 'Recognition'}
               </div>
             </div>
           </div>
@@ -406,7 +453,7 @@ export default function Timetable({
               >
                 <Download className="w-5 h-5" />
                 
-                 {lang === "de" ? "PDF exportieren" : "Export PDF"}
+                {lang === 'de' ? 'PDF exportieren' : 'Export PDF'}
               </button>
             </div>
           </div>
@@ -417,17 +464,22 @@ export default function Timetable({
             </p>
           ) : viewMode === 'list' ? (
             <div className="flex flex-col gap-4">
-              {sh.measures.map(m => (
+              {getSortedMeasures(sh.measures).map(m => (
                 <div
                   key={m._id}
                   className="bg-[#F2F2F2] border-l-[4px] border-[#BADA55] rounded-xl p-6 flex flex-row items-center relative overflow-hidden shadow-sm"
                 >
                   <div className="w-[140px] text-[16px] md:text-xl font-semibold text-black">
-                     {lang === "de" ? `Woche ${m.startWeeks}` : `Week ${m.startWeeks}`}
+                    {lang === 'de'
+                      ? `Woche ${m.startWeeks}`
+                      : `Week ${m.startWeeks}`}
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="text-[20px] font-bold text-black">
                       {m.type} - {m.name}
+                    </div>
+                    <div className="text-[13px] font-semibold text-[#00253E]/70">
+                      {formatMeasureDate(m.createdAt)}
                     </div>
                     <div className="flex">
                       <span
@@ -454,103 +506,192 @@ export default function Timetable({
               </div>
             </div>
           ) : (
-            <div className="relative pt-2 pb-24 px-10 bg-white overflow-x-auto min-w-[80%] print:overflow-visible rounded-xl shadow-sm border border-gray-50">
-              <div className="min-w-[80%] relative h-[350px]">
-                <div className="absolute top-[200px] left-0 right-0 h-[44px] flex shadow-inner rounded-md overflow-hidden border border-gray-200">
+            (() => {
+              const sortedMeasures = getSortedMeasures(sh.measures)
+              const maxWeeksPre =
+                sortedMeasures
+                  .filter(m => m.timing === 'pre')
+                  .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
+              const maxWeeksPost =
+                sortedMeasures
+                  .filter(m => m.timing === 'post')
+                  .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
+
+              const timelineStartBuffer = Math.max(2, maxWeeksPre + 2)
+              const timelineEndBuffer = Math.max(2, maxWeeksPost + 2)
+              const totalWeeks = timelineStartBuffer + timelineEndBuffer
+              const timelineWidth = Math.max(980, totalWeeks * 70)
+              const splitLeft = `${(timelineStartBuffer / totalWeeks) * 100}%`
+              const preCount = sortedMeasures.filter(
+                m => m.timing === 'pre',
+              ).length
+              const postCount = sortedMeasures.filter(
+                m => m.timing === 'post',
+              ).length
+              const upperRows = Math.max(
+                1,
+                Math.ceil(preCount / 2),
+                Math.ceil(postCount / 2),
+              )
+              const lowerRows = Math.max(
+                1,
+                Math.ceil(preCount / 2),
+                Math.ceil(postCount / 2),
+              )
+              const rowGap = 42
+              const cardHeight = 58
+              const topBase = 12
+              const timelineTop = 182 + Math.max(0, upperRows - 1) * rowGap
+              const bottomBase = timelineTop + 92
+              const canvasHeight =
+                bottomBase +
+                cardHeight +
+                Math.max(0, lowerRows - 1) * rowGap +
+                20
+
+              return (
+                <div
+                  data-pdf-grid-shell="true"
+                  className="relative rounded-xl border border-gray-50 bg-white px-6 py-6 shadow-sm"
+                >
                   <div
-                    className="h-full bg-[#D7A8BA]"
-                    style={{
-                      width: `${(timelineStartBuffer / totalWeeks) * 100}%`,
-                    }}
-                  ></div>
-                  <div className="h-full bg-[#829DB5] flex-1"></div>
-
-                  <div className="absolute inset-0 flex">
-                    {[...Array(totalWeeks + 1)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 border-r border-[#00253E]/15 last:border-0 relative"
-                      >
-                        {i === timelineStartBuffer && (
-                          <div className="absolute top-[-90px] left-0 -translate-x-1/2 flex flex-col items-center">
-                            <div className="bg-white border border-gray-100 shadow-xl px-6 py-3 rounded-lg mb-3 flex flex-col items-center z-30">
-                              <span className="text-[15px] font-black text-[#00253E]">
-                                Start
-                              </span>
-                              <span className="text-[12px] text-gray-500 font-bold">
-                                {new Date(kickOffDate)
-                                  .toLocaleDateString('en-GB', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                  })
-                                  .replace(/\//g, '.')}
-                              </span>
-                            </div>
-                            <div className="w-[4px] h-[340px] bg-[#A91D54] z-20"></div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {sh.measures.map((m, idx) => {
-                  const isPre = m.timing === 'pre'
-                  const weekPos = isPre
-                    ? timelineStartBuffer - m.startWeeks
-                    : timelineStartBuffer + m.startWeeks
-                  const xPos = (weekPos / totalWeeks) * 100
-
-                  const isAbove = idx % 2 === 0
-                  const row = idx % 3
-                  const yPos = isAbove ? 30 + row * 50 : 280 + row * 50
-                  const lineHeight = isAbove ? 200 - yPos : yPos - 244
-
-                  return (
+                    data-pdf-grid-viewport="true"
+                    className="overflow-x-hidden overflow-y-visible print:overflow-visible"
+                  >
                     <div
-                      key={m._id}
-                      className="absolute z-20"
-                      style={{
-                        left: `${xPos}%`,
-                        top: `${yPos}px`,
-                        transform: 'translateX(-50%)',
-                      }}
+                      data-pdf-grid-canvas="true"
+                      className="relative mx-auto min-w-full print:min-w-0"
+                      style={{ height: `${canvasHeight}px`, width: `${timelineWidth}px` }}
                     >
-                      <div className="flex items-start gap-3 bg-white rounded-lg p-2 whitespace-nowrap min-w-[170px] shadow-md border border-gray-100">
+                      <div
+                        className="absolute left-0 right-0 h-[48px] overflow-hidden border border-[#d7dde3]"
+                        style={{ top: `${timelineTop}px` }}
+                      >
                         <div
-                          className="w-[20px] h-[20px] mt-1 flex-shrink-0 rounded-sm"
-                          style={{
-                            backgroundColor: getCategoryColor(m.category),
-                          }}
+                          className="absolute inset-y-0 left-0 bg-[#DDB3C1]"
+                          style={{ width: splitLeft }}
                         ></div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[15px] font-bold text-[#00253E] leading-tight">
-                            {m.type}
-                          </span>
-                          <span className="text-[13px] text-[#00253E] font-medium leading-tight opacity-95 max-w-[140px] truncate">
-                            {m.name}
-                          </span>
-                          <span className="text-[11px] text-[#00253E]/70 font-black mt-0.5">
-                            {m.startWeeks} Weeks
-                          </span>
-                          <span className="text-[11px] text-[#00253E]/70 font-black mt-0.5">
+                        <div
+                          className="absolute inset-y-0 right-0 bg-[#9EB7CB]"
+                          style={{ width: `calc(100% - ${splitLeft})` }}
+                        ></div>
+                      </div>
+
+                      <div
+                        className="absolute left-0 right-0 h-[78px]"
+                        style={{ top: `${timelineTop - 32}px` }}
+                      >
+                        {Array.from({ length: totalWeeks + 1 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="absolute top-0 h-[50px] w-px bg-[#23445f]/65"
+                            style={{ left: `${(i / totalWeeks) * 100}%` }}
+                          ></div>
+                        ))}
+                      </div>
+
+                      <div
+                        className="absolute z-30 flex -translate-x-1/2 flex-col items-center"
+                        style={{ left: splitLeft, top: `${timelineTop - 73}px` }}
+                      >
+                        <div className="h-[56px] w-[3px] bg-[#A91D54]"></div>
+                        <div className="mt-[-1px] flex flex-col items-center bg-white px-2 text-center">
+                          <div className="flex items-center gap-1 text-[24px] font-black leading-none text-[#A91D54]">
+                            <span className="h-[13px] w-[13px] rounded-full bg-[#A91D54]"></span>
+                            <span className="text-[20px] text-[#00253E]">
+                              Start
+                            </span>
+                          </div>
+                          <span className="mt-1 text-[12px] font-bold text-[#00253E]">
                             {formattedStartDate}
                           </span>
                         </div>
+                        <div className="h-[120px] w-[3px] bg-[#A91D54]"></div>
                       </div>
 
-                      <div
-                        className={`absolute left-1/2 w-[1px] bg-gray-400/80 z-10 ${
-                          isAbove ? 'top-full' : 'bottom-full'
-                        }`}
-                        style={{ height: `${lineHeight}px` }}
-                      ></div>
+                      {sortedMeasures.map((m, idx) => {
+                        const isPre = m.timing === 'pre'
+                        const weekPos = isPre
+                          ? timelineStartBuffer - (m.startWeeks || 0)
+                          : timelineStartBuffer + (m.startWeeks || 0)
+                        const xPos = `${(weekPos / totalWeeks) * 100}%`
+
+                        const orderWithinSide = sortedMeasures
+                          .slice(0, idx + 1)
+                          .filter(item => item.timing === m.timing).length - 1
+                        const isNearStart = (m.startWeeks || 0) <= 2
+                        const nearStartCountWithinSide = sortedMeasures
+                          .slice(0, idx + 1)
+                          .filter(
+                            item =>
+                              item.timing === m.timing &&
+                              (item.startWeeks || 0) <= 2,
+                          ).length
+                        const adjustedOrder = isPre
+                          ? orderWithinSide
+                          : Math.max(0, orderWithinSide - nearStartCountWithinSide)
+                        const isAbove = isPre
+                          ? orderWithinSide % 2 === 0
+                          : isNearStart
+                            ? false
+                            : adjustedOrder % 2 === 0
+                        const rowOffset = Math.floor(orderWithinSide / 2)
+                        const yPos = isAbove
+                          ? topBase + rowOffset * rowGap
+                          : bottomBase + rowOffset * rowGap
+                        const connectorHeight = isAbove
+                          ? timelineTop - (yPos + cardHeight)
+                          : yPos - (timelineTop + 48)
+
+                        return (
+                          <div
+                            key={m._id}
+                            className="absolute z-20 -translate-x-1/2"
+                            style={{
+                              left: xPos,
+                              top: `${yPos}px`,
+                            }}
+                          >
+                            <div
+                              className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#5C7286]/80 ${
+                                isAbove ? 'top-full' : 'bottom-full'
+                              }`}
+                              style={{
+                                height: `${Math.max(connectorHeight, 24)}px`,
+                              }}
+                            ></div>
+
+                            <div className="flex min-w-[180px] max-w-[210px] gap-3 bg-white px-1 py-1 text-[#00253E]">
+                              <div
+                                className="mt-1 h-[18px] w-[18px] flex-shrink-0 rounded-none"
+                                style={{
+                                  backgroundColor: getCategoryColor(m.category),
+                                }}
+                              ></div>
+                              <div className="flex flex-col leading-tight">
+                                <span className="text-[15px] font-extrabold">
+                                  {m.type}
+                                </span>
+                                <span className="mt-0.5 text-[12px] font-semibold text-[#00253E]">
+                                  {m.name}
+                                </span>
+                                <span className="mt-1 text-[11px] font-bold text-[#00253E]">
+                                  {m.startWeeks}{' '}
+                                  {m.startWeeks === 1 ? 'Week' : 'Weeks'}
+                                </span>
+                                <span className="mt-0.5 text-[11px] font-bold text-[#00253E]/80">
+                                  {formatMeasureDate(m.createdAt)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
-                  )
-                })}
-              </div>
-            </div>
+                  </div>
+                </div>
+              )
+            })()
           )}
         </div>
       ))}

@@ -20,6 +20,8 @@ export interface Measure {
   name: string;
   startWeeks: number;
   timing: "pre" | "post";
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Stakeholder {
