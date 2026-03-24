@@ -105,19 +105,27 @@ export default function Timetable({
       return (a.startWeeks || 0) - (b.startWeeks || 0)
     })
 
-  const formatMeasureDate = (date?: string) => {
-    if (!date) return formattedStartDate
-
-    const parsedDate = new Date(date)
-    if (Number.isNaN(parsedDate.getTime())) return formattedStartDate
-
-    return parsedDate
+  const formatDisplayDate = (date: Date) =>
+    date
       .toLocaleDateString('en-GB', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
       })
       .replace(/\//g, '.')
+
+  const formatMeasureDate = (measure: Measure) => {
+    if (!kickOffDate) return formattedStartDate
+
+    const baseDate = new Date(kickOffDate)
+    if (Number.isNaN(baseDate.getTime())) return formattedStartDate
+
+    const weekOffset = (measure.startWeeks || 0) * 7
+    const direction = measure.timing === 'pre' ? -1 : 1
+
+    baseDate.setDate(baseDate.getDate() + direction * weekOffset)
+
+    return formatDisplayDate(baseDate)
   }
 
   const exportStakeholderPdf = async (
@@ -479,7 +487,7 @@ export default function Timetable({
                       {m.type} - {m.name}
                     </div>
                     <div className="text-[13px] font-semibold text-[#00253E]/70">
-                      {formatMeasureDate(m.createdAt)}
+                      {formatMeasureDate(m)}
                     </div>
                     <div className="flex">
                       <span
@@ -680,7 +688,7 @@ export default function Timetable({
                                   {m.startWeeks === 1 ? 'Week' : 'Weeks'}
                                 </span>
                                 <span className="mt-0.5 text-[11px] font-bold text-[#00253E]/80">
-                                  {formatMeasureDate(m.createdAt)}
+                                  {formatMeasureDate(m)}
                                 </span>
                               </div>
                             </div>

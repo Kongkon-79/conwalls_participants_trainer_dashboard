@@ -3,14 +3,15 @@
 import React, { useRef } from "react";
 import { Download, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { type Stakeholder } from "./TimeTable";
+import { type Stakeholder, type Measure } from "./TimeTable";
 import type { Html2PdfOptions } from "html2pdf.js";
 
 interface ListViewProps {
   stakeholders: Stakeholder[];
+  kickOffDate?: string;
 }
 
-export default function ListView({ stakeholders }: ListViewProps) {
+export default function ListView({ stakeholders, kickOffDate }: ListViewProps) {
   const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
 
   const getSortedMeasures = (measures: Stakeholder["measures"] = []) =>
@@ -25,13 +26,37 @@ export default function ListView({ stakeholders }: ListViewProps) {
       return (a.startWeeks || 0) - (b.startWeeks || 0);
     });
 
-  const formatMeasureDate = (date?: string) => {
-    if (!date) return "—";
+  const formattedStartDate = kickOffDate
+    ? new Date(kickOffDate)
+        .toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+        .replace(/\//g, " - ")
+    : "—";
 
-    const parsedDate = new Date(date);
-    if (Number.isNaN(parsedDate.getTime())) return "—";
+  const formatDisplayDate = (date: Date) =>
+    date
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+      .replace(/\//g, ".");
 
-    return parsedDate.toLocaleDateString("en-GB").replace(/\//g, ".");
+  const formatMeasureDate = (measure: Measure) => {
+    if (!kickOffDate) return formattedStartDate;
+
+    const baseDate = new Date(kickOffDate);
+    if (Number.isNaN(baseDate.getTime())) return formattedStartDate;
+
+    const weekOffset = (measure.startWeeks || 0) * 7;
+    const direction = measure.timing === "pre" ? -1 : 1;
+
+    baseDate.setDate(baseDate.getDate() + direction * weekOffset);
+
+    return formatDisplayDate(baseDate);
   };
 
   const exportStakeholderPdf = async (
@@ -280,7 +305,7 @@ export default function ListView({ stakeholders }: ListViewProps) {
                       {measure.name}
                     </p>
                     <p className="text-sm md:text-base text-[#00253E]/70 font-semibold pb-2">
-                      {formatMeasureDate(measure.createdAt)}
+                      {formatMeasureDate(measure)}
                     </p>
 
                     <span
