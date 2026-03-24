@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { Download, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type Stakeholder } from "./TimeTable";
+import type { Html2PdfOptions } from "html2pdf.js";
 
 interface ListViewProps {
   stakeholders: Stakeholder[];
@@ -11,6 +12,27 @@ interface ListViewProps {
 
 export default function ListView({ stakeholders }: ListViewProps) {
   const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+
+  const getSortedMeasures = (measures: Stakeholder["measures"] = []) =>
+    [...measures].sort((a, b) => {
+      const timingOrder = { post: 0, pre: 1 };
+      const timingDiff =
+        timingOrder[a.timing as keyof typeof timingOrder] -
+        timingOrder[b.timing as keyof typeof timingOrder];
+
+      if (timingDiff !== 0) return timingDiff;
+
+      return (a.startWeeks || 0) - (b.startWeeks || 0);
+    });
+
+  const formatMeasureDate = (date?: string) => {
+    if (!date) return "—";
+
+    const parsedDate = new Date(date);
+    if (Number.isNaN(parsedDate.getTime())) return "—";
+
+    return parsedDate.toLocaleDateString("en-GB").replace(/\//g, ".");
+  };
 
   const exportStakeholderPdf = async (
     stakeholderId: string,
@@ -29,23 +51,23 @@ export default function ListView({ stakeholders }: ListViewProps) {
 
     const clone = element.cloneNode(true) as HTMLDivElement;
     clone.style.background = "#ffffff";
-    clone.style.padding = "16px";
+    clone.style.padding = "0";
     clone.style.margin = "0";
     clone.style.overflow = "visible";
     clone.style.maxWidth = "none";
     clone.style.width = `${element.scrollWidth || element.offsetWidth}px`;
 
     const exportBtn = clone.querySelector('[data-export-btn="true"]');
-    if (exportBtn) exportBtn.remove();
+    if (exportBtn) {
+      (exportBtn as HTMLDivElement).style.visibility = "hidden";
+      (exportBtn as HTMLDivElement).style.pointerEvents = "none";
+    }
 
     const header = clone.querySelector(
       '[data-header-row="true"]',
     ) as HTMLDivElement | null;
     if (header) {
-      header.style.justifyContent = "flex-start";
-      header.style.alignItems = "center";
-      header.style.gap = "12px";
-      header.style.marginBottom = "16px";
+      header.style.marginBottom = "24px";
     }
 
     // ✅ Fix stakeholder badge style in PDF
@@ -158,7 +180,10 @@ export default function ListView({ stakeholders }: ListViewProps) {
     };
 
     try {
-      await html2pdf().set(opt).from(clone).save();
+      await html2pdf()
+        .set(opt as unknown as Html2PdfOptions)
+        .from(clone)
+        .save();
     } finally {
       document.body.removeChild(wrapper);
     }
@@ -184,13 +209,16 @@ export default function ListView({ stakeholders }: ListViewProps) {
 
   return (
     <div className="space-y-6">
-      {stakeholders.map((stakeholder) => (
-        <div
-          key={stakeholder._id}
-          ref={(el) => {
-            sectionRefs.current.set(stakeholder._id, el);
-          }}
-        >
+      {stakeholders.map((stakeholder) => {
+        const sortedMeasures = getSortedMeasures(stakeholder.measures);
+
+        return (
+          <div
+            key={stakeholder._id}
+            ref={(el) => {
+              sectionRefs.current.set(stakeholder._id, el);
+            }}
+          >
           <div
             data-header-row="true"
             className="flex items-center justify-between mb-6"
@@ -232,11 +260,11 @@ export default function ListView({ stakeholders }: ListViewProps) {
                 No measures found.
               </div>
             ) : (
-              stakeholder.measures.map((measure, idx) => (
+              sortedMeasures.map((measure, idx) => (
                 <div
                   key={measure._id}
                   className={`bg-[#F2F2F2] border-l-[6px] border-[#BADA55] flex items-stretch ${
-                    idx !== stakeholder.measures.length - 1
+                    idx !== sortedMeasures.length - 1
                       ? "border-b border-gray-200"
                       : ""
                   }`}
@@ -250,6 +278,9 @@ export default function ListView({ stakeholders }: ListViewProps) {
                   <div className="flex-1 px-5 py-4">
                     <p className="text-xl md:text-2xl lg:text-3xl text-black font-semibold leading-[110%] pb-1">
                       {measure.name}
+                    </p>
+                    <p className="text-sm md:text-base text-[#00253E]/70 font-semibold pb-2">
+                      {formatMeasureDate(measure.createdAt)}
                     </p>
 
                     <span
@@ -276,7 +307,7 @@ export default function ListView({ stakeholders }: ListViewProps) {
             </p>
           </div>
         </div>
-      ))}
+      )})}
     </div>
   );
 }
