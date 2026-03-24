@@ -24,7 +24,7 @@ export default function DashboardLayout({
           </div>
 
           {/* Main Content */}
-          <main className="flex-1 bg-[#F8F9FA] min-h-screen p-4">
+          <main className="min-w-0 flex-1 bg-[#F8F9FA] min-h-screen p-4 overflow-x-hidden">
             <div className="lg:hidden p-4">
               <SidebarTrigger />
             </div>
