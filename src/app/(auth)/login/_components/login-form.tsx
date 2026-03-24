@@ -25,6 +25,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 
 import AuthImage from "../../../../../public/assets/images/auth_logo.png";
+import { parseCookies } from "nookies";
 
 const formSchema = z.object({
   role: z.enum(["PARTICIPANT", "TRAINER"]).default("PARTICIPANT"),
@@ -40,11 +41,15 @@ const formSchema = z.object({
   // rememberMe: z.boolean(),
 });
 
+const COOKIE_NAME = "googtrans";
+
 const LoginForm = () => {
+  const cookie = parseCookies()[COOKIE_NAME];
+  const lang = cookie?.split("/")?.[2] || "en";
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const session = useSession();
-  console.log("session",session);
+  console.log("session", session);
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -56,8 +61,6 @@ const LoginForm = () => {
       // rememberMe: false,
     },
   });
-
-  
 
   // 2. Define a submit handler.
   // async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -91,7 +94,6 @@ const LoginForm = () => {
   //       return;
   //     }
 
-      
   //     toast.success("Login successful!");
   //     if (session?.data?.user?.role === "PARTICIPANT") {
   //       router.push("/participants");
@@ -109,46 +111,45 @@ const LoginForm = () => {
   // }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-  try {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    const res = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      role: values.role,
-      redirect: false,
-    });
+      const res = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        role: values.role,
+        redirect: false,
+      });
 
-    if (res?.error) {
-      if (res.error === "INVALID_CREDENTIALS") {
-        toast.error("Email or Password wrong");
+      if (res?.error) {
+        if (res.error === "INVALID_CREDENTIALS") {
+          toast.error("Email or Password wrong");
+          return;
+        }
+
+        toast.error("Login failed");
         return;
       }
 
-      toast.error("Login failed");
-      return;
+      // 🔥 Important: wait for updated session
+      const updatedSession = await getSession();
+
+      toast.success("Login successful!");
+
+      if (updatedSession?.user?.role === "PARTICIPANT") {
+        router.push("/participants");
+      } else if (updatedSession?.user?.role === "TRAINER") {
+        router.push("/trainer/participants");
+      } else {
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-
-    // 🔥 Important: wait for updated session
-    const updatedSession = await getSession();
-
-    toast.success("Login successful!");
-
-    if (updatedSession?.user?.role === "PARTICIPANT") {
-      router.push("/participants");
-    } else if (updatedSession?.user?.role === "TRAINER") {
-      router.push("/trainer/participants");
-    } else {
-      router.push("/");
-    }
-
-  } catch (error) {
-    console.error("Login failed:", error);
-    toast.error("Login failed. Please try again.");
-  } finally {
-    setIsLoading(false);
   }
-}
   return (
     <div>
       <div className="w-full md:w-[479px] bg-white rounded-[16px] border-[2px] border-[#E7E7E7] shadow-[0px_0px_10px_0px_#0000001A] p-6">
@@ -156,7 +157,7 @@ const LoginForm = () => {
           <Link href="/">
             <Image
               src={AuthImage}
-              alt="auth logo" 
+              alt="auth logo"
               width={500}
               height={500}
               className="w-[260px] h-[79px] object-contain"
@@ -167,8 +168,8 @@ const LoginForm = () => {
         <h3 className="text-xl md:text-2xl lg:text-[32px] font-semibold text-[#00253E] text-left leading-[120%] ">
           Sign in to Insight Engine
         </h3>
-        <p className="text-base font-normal text-[#666666] leading-[150%] text-left pt-1">
-          Access your  change communication workspace
+        <p className="text-base font-normal text-[#666666] leading-[150%] text-left pt-1 ">
+          Access your change <span className="notranslate">{lang === "de" ? " Kommunikation " : "communication"}</span> workspace
         </p>
         <Form {...form}>
           <form
@@ -194,7 +195,8 @@ const LoginForm = () => {
                             : "bg-white shadow-[0_0_10px_#0000001A]  text-[#666666]"
                         }`}
                       >
-                       <User className="inline mr-1 w-4 h-4 text-[#292D32]" /> Participants
+                        <User className="inline mr-1 w-4 h-4 text-[#292D32]" />{" "}
+                        Participants
                       </button>
 
                       <button
@@ -206,7 +208,8 @@ const LoginForm = () => {
                             : "bg-white shadow-[0_0_10px_#0000001A]  text-[#666666]"
                         }`}
                       >
-                       <UserPlus className="inline mr-1 w-4 h-4 text-[#292D32]" /> Trainer
+                        <UserPlus className="inline mr-1 w-4 h-4 text-[#292D32]" />{" "}
+                        Trainer
                       </button>
                     </div>
                   </FormControl>
@@ -243,7 +246,8 @@ const LoginForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-lg md:text-xl lg:text-2xl font-medium text-[#001B31]">
-                   <Mail className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/> Email Address
+                    <Mail className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]" />{" "}
+                    Email Address
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -262,7 +266,8 @@ const LoginForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-lg md:text-xl lg:text-2xl font-medium text-[#001B31] ">
-                  <LockKeyhole className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]"/>  Password 
+                    <LockKeyhole className="inline mr-1 -mt-1 w-6 h-6 text-[#00253E]" />{" "}
+                    Password
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -293,11 +298,11 @@ const LoginForm = () => {
 
             <div className="flex items-center justify-end">
               <Link
-                    className="text-base font-normal text-primary cursor-pointer leading-[120%] hover:underline"
-                    href="/forgot-password"
-                  >
-                    Forgot Password?
-                  </Link>
+                className="text-base font-normal text-primary cursor-pointer leading-[120%] hover:underline"
+                href="/forgot-password"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
             {/* <FormField
