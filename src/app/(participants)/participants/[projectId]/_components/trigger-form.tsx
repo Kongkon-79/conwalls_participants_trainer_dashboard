@@ -179,8 +179,9 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         <div className="space-y-3 notranslate" translate="no">
           <div className="flex items-center gap-2">
             <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
-            <label className="text-[20px] font-medium text-[#00253E]">
-              <span>{lang === "de" ? "Schmerzpunkt" : "Pain point"}</span>
+            <label className="text-[20px] font-medium text-[#00253E] notranslate">
+              {/* <span>{lang === "de" ? "Schmerzpunkt" : "Pain point"}</span> */}
+              Pain point
             </label>
             <HelpIcon text={getStakeholderHelpText("Pain point")} />
           </div>
@@ -200,8 +201,9 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         <div className="space-y-3 notranslate" translate="no">
           <div className="flex items-center gap-2">
             <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
-            <label className="text-[20px] font-medium text-[#00253E]">
-              <span>{lang === "de" ? "Vorteile" : "Benefits"}</span>
+            <label className="text-[20px] font-medium text-[#00253E] notranslate">
+              {/* <span>{lang === "de" ? "Vorteile" : "Benefits"}</span> */}
+              Benefits
             </label>
             <HelpIcon text={getStakeholderHelpText("Benefits")} />
           </div>
@@ -315,10 +317,11 @@ export default function TriggerForm({ stakeholder, onBack }: TriggerFormProps) {
         <div className="space-y-3 notranslate" translate="no">
           <div className="flex items-center gap-2">
             <Image src={penIcon} alt="Pen Icon" width={22} height={22} />
-            <label className="text-[20px] font-medium text-[#00253E]">
-              <span>
+            <label className="text-[20px] font-medium text-[#00253E] notranslate">
+              {/* <span>
                 {lang === "de" ? "Aufruf zum Handeln" : "Call to Action"}
-              </span>
+              </span> */}
+              Call to Action
             </label>
             <HelpIcon text={getStakeholderHelpText("Call to Action")} />
           </div>
@@ -439,7 +442,7 @@ function HelpIcon({ text }: { text: string }) {
                   {parts.slice(1).map((item, idx) => (
                     <li
                       key={idx}
-                      className="whitespace-normal break-words"
+                      className="whitespace-normal break-words pb-2"
                       style={{
                         overflowWrap: "anywhere",
                         wordBreak: "break-word",

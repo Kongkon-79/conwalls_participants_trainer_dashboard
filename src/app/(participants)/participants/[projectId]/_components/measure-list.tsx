@@ -130,7 +130,7 @@ console.log("Stakeholder Id", stakeholder?._id)
         <div className="grid grid-cols-[3fr_2fr_1fr_auto] gap-4 p-4 bg-[#00253E] text-white font-medium text-[16px]">
           <div>   {lang === "de" ? "Maßnahme" : "Subject"}</div>
           <div>Type</div>
-          <div>Category</div>
+          <div>Categories</div>
           <div className="w-16"></div>
         </div>
 
