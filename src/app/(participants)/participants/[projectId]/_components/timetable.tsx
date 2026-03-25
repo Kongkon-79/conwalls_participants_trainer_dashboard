@@ -1,26 +1,19 @@
-'use client'
+"use client";
 
-import React, { useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
-import {
-  Loader2,
-  Download,
-  Grid,
-  List,
-  User,
-  ChevronLeft,
-} from 'lucide-react'
-import type { Html2PdfOptions } from 'html2pdf.js'
-import { Stakeholder } from './stakeholder-types'
-import { Measure } from './measure-types'
-import { parseCookies } from 'nookies'
+import React, { useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { Loader2, Download, Grid, List, User, ChevronLeft } from "lucide-react";
+import type { Html2PdfOptions } from "html2pdf.js";
+import { Stakeholder } from "./stakeholder-types";
+import { Measure } from "./measure-types";
+import { parseCookies } from "nookies";
 
 interface TimetableProps {
-  projectId: string
-  projectTitle: string
-  kickOffDate: Date
-  onBack?: () => void
+  projectId: string;
+  projectTitle: string;
+  kickOffDate: Date;
+  onBack?: () => void;
 }
 
 const COOKIE_NAME = "googtrans";
@@ -31,134 +24,137 @@ export default function Timetable({
   kickOffDate,
   onBack,
 }: TimetableProps) {
-  const cookie = parseCookies()[COOKIE_NAME]
-  const lang = cookie?.split('/')?.[2] || 'de'
-  const session = useSession()
-  const token = (session?.data?.user as { accessToken?: string })?.accessToken
+  const cookie = parseCookies()[COOKIE_NAME];
+  const lang = cookie?.split("/")?.[2] || "de";
+  const session = useSession();
+  const token = (session?.data?.user as { accessToken?: string })?.accessToken;
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map())
-  const exportSectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map())
-  const isListView = viewMode === 'list'
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const exportSectionRefs = useRef<Map<string, HTMLDivElement | null>>(
+    new Map(),
+  );
+  const isListView = viewMode === "list";
 
   const { data, isLoading } = useQuery({
-    queryKey: ['stakeholders-measures', projectId],
+    queryKey: ["stakeholders-measures", projectId],
     queryFn: async () => {
       const stRes = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/stakeholder/${projectId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
-      )
+      );
 
-      if (!stRes.ok) throw new Error('Failed to fetch stakeholders')
+      if (!stRes.ok) throw new Error("Failed to fetch stakeholders");
 
-      const stData = await stRes.json()
-      const stakeholders: Stakeholder[] = stData.data || []
+      const stData = await stRes.json();
+      const stakeholders: Stakeholder[] = stData.data || [];
 
-      const measuresMap = new Map<string, Measure[]>()
+      const measuresMap = new Map<string, Measure[]>();
 
       await Promise.all(
-        stakeholders.map(async sh => {
+        stakeholders.map(async (sh) => {
           const mRes = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/measure/${projectId}/stakeholders/${sh._id}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             },
-          )
+          );
 
           if (mRes.ok) {
-            const mData = await mRes.json()
-            measuresMap.set(sh._id, mData.data || [])
+            const mData = await mRes.json();
+            measuresMap.set(sh._id, mData.data || []);
           }
         }),
-      )
+      );
 
-      return stakeholders.map(sh => ({
+      return stakeholders.map((sh) => ({
         ...sh,
         measures: measuresMap.get(sh._id) || [],
-      }))
+      }));
     },
     enabled: !!token && !!projectId,
-  })
+  });
 
   const getCategoryColor = (category: string) => {
-    const cat = category?.toLowerCase() || ''
-    if (cat.includes('communication')) return '#B5CC2E'
-    if (cat.includes('involvement')) return '#00253E'
-    if (cat.includes('recognition')) return '#A91D54'
-    return '#9CA3AF'
-  }
+    const cat = category?.toLowerCase() || "";
+    if (cat.includes("communication")) return "#B5CC2E";
+    if (cat.includes("involvement")) return "#00253E";
+    if (cat.includes("recognition")) return "#A91D54";
+    return "#9CA3AF";
+  };
 
   const getCategoryTextColor = (category: string) => {
-    const cat = category?.toLowerCase() || ''
-    if (cat.includes('communication')) return '#00253E'
-    return '#FFFFFF'
-  }
+    const cat = category?.toLowerCase() || "";
+    if (cat.includes("communication")) return "#00253E";
+    return "#FFFFFF";
+  };
 
   const getSortedMeasures = (measures: Measure[] = []) =>
     [...measures].sort((a, b) => {
-      const timingOrder = { post: 0, pre: 1 }
+      const timingOrder = { post: 0, pre: 1 };
       const timingDiff =
         timingOrder[a.timing as keyof typeof timingOrder] -
-        timingOrder[b.timing as keyof typeof timingOrder]
+        timingOrder[b.timing as keyof typeof timingOrder];
 
-      if (timingDiff !== 0) return timingDiff
+      if (timingDiff !== 0) return timingDiff;
 
-      return (a.startWeeks || 0) - (b.startWeeks || 0)
-    })
+      return (a.startWeeks || 0) - (b.startWeeks || 0);
+    });
 
   const formatDisplayDate = (date: Date) =>
     date
-      .toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
       })
-      .replace(/\//g, '.')
+      .replace(/\//g, ".");
 
   const formatMeasureDate = (measure: Measure) => {
-    if (!kickOffDate) return formattedStartDate
+    if (!kickOffDate) return formattedStartDate;
 
-    const baseDate = new Date(kickOffDate)
-    if (Number.isNaN(baseDate.getTime())) return formattedStartDate
+    const baseDate = new Date(kickOffDate);
+    if (Number.isNaN(baseDate.getTime())) return formattedStartDate;
 
-    const weekOffset = (measure.startWeeks || 0) * 7
-    const direction = measure.timing === 'pre' ? -1 : 1
+    const weekOffset = (measure.startWeeks || 0) * 7;
+    const direction = measure.timing === "pre" ? -1 : 1;
 
-    baseDate.setDate(baseDate.getDate() + direction * weekOffset)
+    baseDate.setDate(baseDate.getDate() + direction * weekOffset);
 
-    return formatDisplayDate(baseDate)
-  }
+    return formatDisplayDate(baseDate);
+  };
 
   const exportStakeholderPdf = async (
     stakeholderId: string,
     fileName: string,
-    mode: 'grid' | 'list',
+    mode: "grid" | "list",
   ) => {
-    if (typeof window === 'undefined') return
+    if (typeof window === "undefined") return;
 
-    if (mode === 'grid') {
-      const exportElement = exportSectionRefs.current.get(stakeholderId)
-      if (!exportElement) return
+    if (mode === "grid") {
+      const exportElement = exportSectionRefs.current.get(stakeholderId);
+      if (!exportElement) return;
 
-      const fonts = (document as unknown as { fonts?: { ready: Promise<void> } })
-        .fonts
-      if (fonts?.ready) await fonts.ready
+      const fonts = (
+        document as unknown as { fonts?: { ready: Promise<void> } }
+      ).fonts;
+      if (fonts?.ready) await fonts.ready;
 
-      const { default: html2pdf } = await import('html2pdf.js')
+      const { default: html2pdf } = await import("html2pdf.js");
 
-      const fullWidth = exportElement.scrollWidth
-      const fullHeight = exportElement.scrollHeight
+      const fullWidth = exportElement.scrollWidth;
+      const fullHeight = exportElement.scrollHeight;
 
       const opt = {
         margin: 0,
         filename: `${fileName}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
+        image: { type: "jpeg" as const, quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
-          backgroundColor: '#ffffff',
+          backgroundColor: "#ffffff",
           width: fullWidth,
           height: fullHeight,
           windowWidth: fullWidth,
@@ -167,191 +163,193 @@ export default function Timetable({
           scrollY: 0,
         },
         jsPDF: {
-          unit: 'px' as const,
+          unit: "px" as const,
           format: [Math.ceil(fullWidth / 2), Math.ceil(fullHeight / 2)],
-          orientation: 'landscape' as const,
+          orientation: "landscape" as const,
         },
-        pagebreak: { mode: ['avoid-all'] as const },
-      }
+        pagebreak: { mode: ["avoid-all"] as const },
+      };
 
       await html2pdf()
         .set(opt as unknown as Html2PdfOptions)
         .from(exportElement)
-        .save()
-      return
+        .save();
+      return;
     }
 
-    const element = sectionRefs.current.get(stakeholderId)
-    if (!element) return
+    const element = sectionRefs.current.get(stakeholderId);
+    if (!element) return;
 
     const fonts = (document as unknown as { fonts?: { ready: Promise<void> } })
-      .fonts
-    if (fonts?.ready) await fonts.ready
+      .fonts;
+    if (fonts?.ready) await fonts.ready;
 
-    const { default: html2pdf } = await import('html2pdf.js')
+    const { default: html2pdf } = await import("html2pdf.js");
 
-    const clone = element.cloneNode(true) as HTMLDivElement
-    clone.style.background = '#ffffff'
-    clone.style.padding = '0'
-    clone.style.margin = '0'
-    clone.style.overflow = 'visible'
-    clone.style.maxWidth = 'none'
-    clone.style.boxSizing = 'border-box'
+    const clone = element.cloneNode(true) as HTMLDivElement;
+    clone.style.background = "#ffffff";
+    clone.style.padding = "0";
+    clone.style.margin = "0";
+    clone.style.overflow = "visible";
+    clone.style.maxWidth = "none";
+    clone.style.boxSizing = "border-box";
 
-    const exportBtn = clone.querySelector('[data-export-btn="true"]')
+    const exportBtn = clone.querySelector('[data-export-btn="true"]');
     if (exportBtn) {
-      ;(exportBtn as HTMLDivElement).style.display = 'none'
+      (exportBtn as HTMLDivElement).style.display = "none";
     }
 
-    const pdfProjectHeader = document.createElement('div')
-    pdfProjectHeader.style.display = 'block'
-    pdfProjectHeader.style.margin = '0 0 20px'
-    pdfProjectHeader.style.padding = '0 0 16px'
-    pdfProjectHeader.style.borderBottom = '1px solid #d7dde3'
+    const pdfProjectHeader = document.createElement("div");
+    pdfProjectHeader.style.display = "block";
+    pdfProjectHeader.style.margin = "0 0 20px";
+    pdfProjectHeader.style.padding = "0 0 16px";
+    pdfProjectHeader.style.borderBottom = "1px solid #d7dde3";
 
-    const pdfProjectTitle = document.createElement('span')
-    pdfProjectTitle.textContent = projectTitle || 'Untitled Project'
-    pdfProjectTitle.style.fontSize = '22px'
-    pdfProjectTitle.style.fontWeight = '800'
-    pdfProjectTitle.style.lineHeight = '1.2'
-    pdfProjectTitle.style.color = '#00253E'
-    pdfProjectHeader.appendChild(pdfProjectTitle)
-    clone.insertBefore(pdfProjectHeader, clone.firstChild)
+    const pdfProjectTitle = document.createElement("span");
+    pdfProjectTitle.textContent = projectTitle || "Untitled Project";
+    pdfProjectTitle.style.fontSize = "22px";
+    pdfProjectTitle.style.fontWeight = "800";
+    pdfProjectTitle.style.lineHeight = "1.2";
+    pdfProjectTitle.style.color = "#00253E";
+    pdfProjectHeader.appendChild(pdfProjectTitle);
+    clone.insertBefore(pdfProjectHeader, clone.firstChild);
 
     const header = clone.querySelector(
       '[data-header-row="true"]',
-    ) as HTMLDivElement | null
+    ) as HTMLDivElement | null;
 
     if (header) {
-      header.style.marginBottom = '24px'
-      header.style.justifyContent = 'flex-start'
-      header.style.alignItems = 'center'
-      header.style.gap = '16px'
-      header.style.flexWrap = 'wrap'
+      header.style.marginBottom = "24px";
+      header.style.justifyContent = "flex-start";
+      header.style.alignItems = "center";
+      header.style.gap = "16px";
+      header.style.flexWrap = "wrap";
     }
 
     const stakeholderBadge = clone.querySelector(
       '[data-pdf-stakeholder-badge="true"]',
-    ) as HTMLDivElement | null
+    ) as HTMLDivElement | null;
 
     if (stakeholderBadge) {
-      stakeholderBadge.style.display = 'inline-flex'
-      stakeholderBadge.style.alignItems = 'center'
-      stakeholderBadge.style.gap = '12px'
-      stakeholderBadge.style.backgroundColor = '#ffffff'
-      stakeholderBadge.style.color = '#00253E'
-      stakeholderBadge.style.fontSize = '16px'
-      stakeholderBadge.style.fontWeight = '700'
-      stakeholderBadge.style.lineHeight = '1.1'
-      stakeholderBadge.style.padding = '10px 18px'
-      stakeholderBadge.style.borderTop = '1px solid #B5CC2E'
-      stakeholderBadge.style.borderBottom = '1px solid #B5CC2E'
-      stakeholderBadge.style.borderLeft = '4px solid #B5CC2E'
-      stakeholderBadge.style.borderRight = '4px solid #B5CC2E'
-      stakeholderBadge.style.borderRadius = '8px'
-      stakeholderBadge.style.boxSizing = 'border-box'
-      stakeholderBadge.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)'
-      stakeholderBadge.style.width = 'fit-content'
-      stakeholderBadge.style.minWidth = '260px'
-      stakeholderBadge.style.maxWidth = 'none'
-      stakeholderBadge.style.overflow = 'visible'
-      stakeholderBadge.style.whiteSpace = 'nowrap'
-      stakeholderBadge.style.flexShrink = '0'
+      stakeholderBadge.style.display = "inline-flex";
+      stakeholderBadge.style.alignItems = "center";
+      stakeholderBadge.style.gap = "12px";
+      stakeholderBadge.style.backgroundColor = "#ffffff";
+      stakeholderBadge.style.color = "#00253E";
+      stakeholderBadge.style.fontSize = "16px";
+      stakeholderBadge.style.fontWeight = "700";
+      stakeholderBadge.style.lineHeight = "1.1";
+      stakeholderBadge.style.padding = "10px 18px";
+      stakeholderBadge.style.borderTop = "1px solid #B5CC2E";
+      stakeholderBadge.style.borderBottom = "1px solid #B5CC2E";
+      stakeholderBadge.style.borderLeft = "4px solid #B5CC2E";
+      stakeholderBadge.style.borderRight = "4px solid #B5CC2E";
+      stakeholderBadge.style.borderRadius = "8px";
+      stakeholderBadge.style.boxSizing = "border-box";
+      stakeholderBadge.style.boxShadow = "0 1px 2px rgba(0,0,0,0.06)";
+      stakeholderBadge.style.width = "fit-content";
+      stakeholderBadge.style.minWidth = "260px";
+      stakeholderBadge.style.maxWidth = "none";
+      stakeholderBadge.style.overflow = "visible";
+      stakeholderBadge.style.whiteSpace = "nowrap";
+      stakeholderBadge.style.flexShrink = "0";
     }
 
     const stakeholderIcon = clone.querySelector(
       '[data-pdf-stakeholder-icon="true"]',
-    ) as HTMLDivElement | null
+    ) as HTMLDivElement | null;
 
     if (stakeholderIcon) {
-      stakeholderIcon.style.display = 'inline-flex'
-      stakeholderIcon.style.alignItems = 'center'
-      stakeholderIcon.style.justifyContent = 'center'
-      stakeholderIcon.style.width = '20px'
-      stakeholderIcon.style.height = '20px'
-      stakeholderIcon.style.flexShrink = '0'
+      stakeholderIcon.style.display = "inline-flex";
+      stakeholderIcon.style.alignItems = "center";
+      stakeholderIcon.style.justifyContent = "center";
+      stakeholderIcon.style.width = "20px";
+      stakeholderIcon.style.height = "20px";
+      stakeholderIcon.style.flexShrink = "0";
     }
 
     const stakeholderBadgeText = stakeholderBadge?.querySelector(
-      'span',
-    ) as HTMLSpanElement | null
+      "span",
+    ) as HTMLSpanElement | null;
 
     if (stakeholderBadgeText) {
-      stakeholderBadgeText.style.whiteSpace = 'nowrap'
-      stakeholderBadgeText.style.overflow = 'visible'
-      stakeholderBadgeText.style.textOverflow = 'clip'
-      stakeholderBadgeText.style.display = 'inline-block'
-      stakeholderBadgeText.style.maxWidth = 'none'
-      stakeholderBadgeText.style.flexShrink = '0'
+      stakeholderBadgeText.style.whiteSpace = "nowrap";
+      stakeholderBadgeText.style.overflow = "visible";
+      stakeholderBadgeText.style.textOverflow = "clip";
+      stakeholderBadgeText.style.display = "inline-block";
+      stakeholderBadgeText.style.maxWidth = "none";
+      stakeholderBadgeText.style.flexShrink = "0";
     }
 
-    const pills = clone.querySelectorAll('[data-pdf-category-pill="true"]')
-    pills.forEach(node => {
-      const pill = node as HTMLSpanElement
-      const category = (pill.getAttribute('data-category-name') || '').toLowerCase()
+    const pills = clone.querySelectorAll('[data-pdf-category-pill="true"]');
+    pills.forEach((node) => {
+      const pill = node as HTMLSpanElement;
+      const category = (
+        pill.getAttribute("data-category-name") || ""
+      ).toLowerCase();
 
-      pill.style.display = 'inline-flex'
-      pill.style.alignItems = 'center'
-      pill.style.justifyContent = 'center'
-      pill.style.padding = '4px 14px'
-      pill.style.borderRadius = '9999px'
-      pill.style.fontSize = '12px'
-      pill.style.fontWeight = '700'
-      pill.style.lineHeight = '1.1'
-      pill.style.letterSpacing = '0.04em'
-      pill.style.whiteSpace = 'nowrap'
-      pill.style.marginTop = '8px'
+      pill.style.display = "inline-flex";
+      pill.style.alignItems = "center";
+      pill.style.justifyContent = "center";
+      pill.style.padding = "4px 14px";
+      pill.style.borderRadius = "9999px";
+      pill.style.fontSize = "12px";
+      pill.style.fontWeight = "700";
+      pill.style.lineHeight = "1.1";
+      pill.style.letterSpacing = "0.04em";
+      pill.style.whiteSpace = "nowrap";
+      pill.style.marginTop = "8px";
 
-      if (category.includes('communication')) {
-        pill.style.backgroundColor = '#B5CC2E'
-        pill.style.color = '#00253E'
-      } else if (category.includes('involvement')) {
-        pill.style.backgroundColor = '#00253E'
-        pill.style.color = '#FFFFFF'
-      } else if (category.includes('recognition')) {
-        pill.style.backgroundColor = '#A91D54'
-        pill.style.color = '#FFFFFF'
+      if (category.includes("communication")) {
+        pill.style.backgroundColor = "#B5CC2E";
+        pill.style.color = "#00253E";
+      } else if (category.includes("involvement")) {
+        pill.style.backgroundColor = "#00253E";
+        pill.style.color = "#FFFFFF";
+      } else if (category.includes("recognition")) {
+        pill.style.backgroundColor = "#A91D54";
+        pill.style.color = "#FFFFFF";
       } else {
-        pill.style.backgroundColor = '#9CA3AF'
-        pill.style.color = '#FFFFFF'
+        pill.style.backgroundColor = "#9CA3AF";
+        pill.style.color = "#FFFFFF";
       }
-    })
+    });
 
     const fullWidth =
       element.scrollWidth ||
       element.offsetWidth ||
-      element.getBoundingClientRect().width
+      element.getBoundingClientRect().width;
     const fullHeight =
       element.scrollHeight ||
       element.offsetHeight ||
-      element.getBoundingClientRect().height
+      element.getBoundingClientRect().height;
 
-    clone.style.width = `${fullWidth}px`
-    clone.style.minHeight = `${fullHeight}px`
+    clone.style.width = `${fullWidth}px`;
+    clone.style.minHeight = `${fullHeight}px`;
 
-    const wrapper = document.createElement('div')
-    wrapper.style.position = 'fixed'
-    wrapper.style.left = '-100000px'
-    wrapper.style.top = '0'
-    wrapper.style.background = '#ffffff'
-    wrapper.style.width = `${fullWidth}px`
-    wrapper.style.minHeight = `${fullHeight}px`
-    wrapper.style.overflow = 'visible'
-    wrapper.appendChild(clone)
-    document.body.appendChild(wrapper)
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "fixed";
+    wrapper.style.left = "-100000px";
+    wrapper.style.top = "0";
+    wrapper.style.background = "#ffffff";
+    wrapper.style.width = `${fullWidth}px`;
+    wrapper.style.minHeight = `${fullHeight}px`;
+    wrapper.style.overflow = "visible";
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
 
-    const pdfUnit = 'mm' as const
-    const pdfFormat = 'a4' as const
-    const orientation = 'portrait' as const
+    const pdfUnit = "mm" as const;
+    const pdfFormat = "a4" as const;
+    const orientation = "portrait" as const;
 
     const opt = {
       margin: 8,
       filename: `${fileName}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 },
+      image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: "#ffffff",
         width: fullWidth,
         height: fullHeight,
         windowWidth: fullWidth,
@@ -364,78 +362,79 @@ export default function Timetable({
         format: pdfFormat,
         orientation,
       },
-      pagebreak: { mode: ['css', 'legacy'] as const },
-    }
+      pagebreak: { mode: ["css", "legacy"] as const },
+    };
 
     try {
-      await html2pdf().set(opt).from(clone).save()
+      await html2pdf().set(opt).from(clone).save();
     } finally {
-      document.body.removeChild(wrapper)
+      document.body.removeChild(wrapper);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="flex justify-center p-12">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
-    )
+    );
   }
 
-  const stakeholdersWithMeasures = data || []
+  const stakeholdersWithMeasures = data || [];
 
   const formattedStartDate = kickOffDate
     ? new Date(kickOffDate)
-        .toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
+        .toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
         })
-        .replace(/\//g, '.')
-    : '08.02.2026'
+        .replace(/\//g, ".")
+    : "08.02.2026";
 
-  const renderHiddenGridExport = (sh: Stakeholder & { measures: Measure[] }) => {
-    const sortedMeasures = getSortedMeasures(sh.measures)
-    if (!sortedMeasures.length) return null
+  const renderHiddenGridExport = (
+    sh: Stakeholder & { measures: Measure[] },
+  ) => {
+    const sortedMeasures = getSortedMeasures(sh.measures);
+    if (!sortedMeasures.length) return null;
 
     const maxWeeksPre =
       sortedMeasures
-        .filter(m => m.timing === 'pre')
-        .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
+        .filter((m) => m.timing === "pre")
+        .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0;
     const maxWeeksPost =
       sortedMeasures
-        .filter(m => m.timing === 'post')
-        .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
+        .filter((m) => m.timing === "post")
+        .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0;
 
-    const timelineStartBuffer = Math.max(2, maxWeeksPre + 2)
-    const timelineEndBuffer = Math.max(2, maxWeeksPost + 2)
-    const totalWeeks = timelineStartBuffer + timelineEndBuffer
-    const weekWidth = 56
-    const timelineWidth = Math.max(640, totalWeeks * weekWidth)
-    const canvasSidePadding = 140
-    const canvasWidth = timelineWidth + canvasSidePadding * 2
+    const timelineStartBuffer = Math.max(2, maxWeeksPre + 2);
+    const timelineEndBuffer = Math.max(2, maxWeeksPost + 2);
+    const totalWeeks = timelineStartBuffer + timelineEndBuffer;
+    const weekWidth = 56;
+    const timelineWidth = Math.max(640, totalWeeks * weekWidth);
+    const canvasSidePadding = 140;
+    const canvasWidth = timelineWidth + canvasSidePadding * 2;
     const splitLeftPx =
-      canvasSidePadding +
-      (timelineStartBuffer / totalWeeks) * timelineWidth
-    const preCount = sortedMeasures.filter(m => m.timing === 'pre').length
-    const postCount = sortedMeasures.filter(m => m.timing === 'post').length
+      canvasSidePadding + (timelineStartBuffer / totalWeeks) * timelineWidth;
+    const preCount = sortedMeasures.filter((m) => m.timing === "pre").length;
+    const postCount = sortedMeasures.filter((m) => m.timing === "post").length;
     const upperRows = Math.max(
       1,
       Math.ceil(preCount / 2),
       Math.ceil(postCount / 2),
-    )
+    );
     const lowerRows = Math.max(
       1,
       Math.ceil(preCount / 2),
       Math.ceil(postCount / 2),
-    )
-    const rowGap = 40
-    const cardHeight = 56
-    const topBase = 12
-    const timelineTop = 182 + Math.max(0, upperRows - 1) * rowGap
-    const bottomBase = timelineTop + 92
+    );
+    const rowGap = 40;
+    const cardHeight = 56;
+    const topBase = 12;
+    const timelineTop = 182 + Math.max(0, upperRows - 1) * rowGap;
+    const bottomBase = timelineTop + 92;
     const canvasHeight =
-      bottomBase + cardHeight + Math.max(0, lowerRows - 1) * rowGap + 20
+      bottomBase + cardHeight + Math.max(0, lowerRows - 1) * rowGap + 20;
 
     return (
       <div
@@ -443,23 +442,23 @@ export default function Timetable({
         className="pointer-events-none fixed left-[-9999px] top-0 z-[-1]"
       >
         <div
-          ref={el => {
-            exportSectionRefs.current.set(sh._id, el)
+          ref={(el) => {
+            exportSectionRefs.current.set(sh._id, el);
           }}
           className="inline-block bg-white p-8 font-sans"
         >
           <div className="mb-6 border-b border-[#d7dde3] pb-4">
-            <span className="text-[24px] font-extrabold leading-[1.2] text-[#00253E]">
-              {projectTitle || 'Untitled Project'}
-            </span>
-          </div>
-
-          <div className="mb-6 flex items-center justify-start">
-            <div className="inline-flex min-w-[280px] items-center gap-3 rounded-[8px] border border-x-[4px] border-[#B5CC2E] bg-white px-5 py-3 shadow-sm">
-              <User className="h-5 w-5 flex-shrink-0 text-[#B5CC2E]" />
-              <span className="whitespace-nowrap text-[16px] font-bold text-[#00253E]">
-                {sh.name}
+            <div className="flex flex-col gap-4">
+              <span className="text-[24px] font-extrabold leading-[1.2] text-[#00253E]">
+                {projectTitle || "Untitled Project"}
               </span>
+
+              <div className="inline-flex min-w-[280px] items-center gap-3 self-start rounded-[8px] border border-x-[4px] border-[#B5CC2E] bg-white px-5 py-3 shadow-sm">
+                <User className="h-5 w-5 flex-shrink-0 text-[#B5CC2E]" />
+                <span className="whitespace-nowrap text-[16px] font-bold text-[#00253E]">
+                  {sh.name}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -518,7 +517,9 @@ export default function Timetable({
                 <div className="mt-[-1px] flex flex-col items-center bg-white px-2 text-center">
                   <div className="flex items-center gap-1 text-[24px] font-black leading-none text-[#A91D54]">
                     <span className="h-[13px] w-[13px] rounded-full bg-[#A91D54]"></span>
-                    <span className="text-[20px] text-[#00253E]">Start</span>
+                    <span className="text-[20px] text-[#00253E]">
+                      {lang === "de" ? "Kick off" : "Start"}
+                    </span>
                   </div>
                   <span className="mt-1 whitespace-nowrap text-[12px] font-bold text-[#00253E]">
                     {formattedStartDate}
@@ -528,38 +529,39 @@ export default function Timetable({
               </div>
 
               {sortedMeasures.map((m, idx) => {
-                const isPre = m.timing === 'pre'
+                const isPre = m.timing === "pre";
                 const weekPos = isPre
                   ? timelineStartBuffer - (m.startWeeks || 0)
-                  : timelineStartBuffer + (m.startWeeks || 0)
+                  : timelineStartBuffer + (m.startWeeks || 0);
                 const xPos =
-                  canvasSidePadding + (weekPos / totalWeeks) * timelineWidth
+                  canvasSidePadding + (weekPos / totalWeeks) * timelineWidth;
 
-                const orderWithinSide = sortedMeasures
-                  .slice(0, idx + 1)
-                  .filter(item => item.timing === m.timing).length - 1
-                const isNearStart = (m.startWeeks || 0) <= 2
+                const orderWithinSide =
+                  sortedMeasures
+                    .slice(0, idx + 1)
+                    .filter((item) => item.timing === m.timing).length - 1;
+                const isNearStart = (m.startWeeks || 0) <= 2;
                 const nearStartCountWithinSide = sortedMeasures
                   .slice(0, idx + 1)
                   .filter(
-                    item =>
+                    (item) =>
                       item.timing === m.timing && (item.startWeeks || 0) <= 2,
-                  ).length
+                  ).length;
                 const adjustedOrder = isPre
                   ? orderWithinSide
-                  : Math.max(0, orderWithinSide - nearStartCountWithinSide)
+                  : Math.max(0, orderWithinSide - nearStartCountWithinSide);
                 const isAbove = isPre
                   ? orderWithinSide % 2 === 0
                   : isNearStart
                     ? false
-                    : adjustedOrder % 2 === 0
-                const rowOffset = Math.floor(orderWithinSide / 2)
+                    : adjustedOrder % 2 === 0;
+                const rowOffset = Math.floor(orderWithinSide / 2);
                 const yPos = isAbove
                   ? topBase + rowOffset * rowGap
-                  : bottomBase + rowOffset * rowGap
+                  : bottomBase + rowOffset * rowGap;
                 const connectorHeight = isAbove
                   ? timelineTop - (yPos + cardHeight)
-                  : yPos - (timelineTop + 48)
+                  : yPos - (timelineTop + 48);
 
                 return (
                   <div
@@ -572,7 +574,7 @@ export default function Timetable({
                   >
                     <div
                       className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#5C7286]/80 ${
-                        isAbove ? 'top-full' : 'bottom-full'
+                        isAbove ? "top-full" : "bottom-full"
                       }`}
                       style={{
                         height: `${Math.max(connectorHeight, 24)}px`,
@@ -594,7 +596,14 @@ export default function Timetable({
                           {m.name}
                         </span>
                         <span className="mt-1 text-[11px] font-bold text-[#00253E]">
-                          {m.startWeeks} {m.startWeeks === 1 ? 'Week' : 'Weeks'}
+                          {m.startWeeks}{" "}
+                          {lang === "de"
+                            ? m.startWeeks === 1
+                              ? "Woche"
+                              : "Wochen"
+                            : m.startWeeks === 1
+                              ? "Week"
+                              : "Weeks"}
                         </span>
                         <span className="mt-0.5 text-[11px] font-bold text-[#00253E]/80">
                           {formatMeasureDate(m)}
@@ -602,14 +611,14 @@ export default function Timetable({
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="space-y-10 pb-10 w-full max-w-full mx-auto overflow-x-hidden font-sans">
@@ -621,18 +630,18 @@ export default function Timetable({
               className="flex items-center gap-1 text-[14px] text-gray-500 hover:text-[#00253E] transition-colors mb-2 print:hidden"
             >
               <ChevronLeft className="w-4 h-4" />
-              {lang === 'de' ? 'Zurück' : 'Go Back'}
+              {lang === "de" ? "Zurück" : "Go Back"}
             </button>
             <h2 className="text-[22px] font-bold text-[#00253E]">
-              {lang === 'de' ? 'Projektliste' : 'Project List'}
+              {lang === "de" ? "Projektliste" : "Project List"}
             </h2>
             <div className="flex flex-wrap items-center gap-2 text-[15px] text-gray-500">
               <span className="notranslate">
-                {projectTitle || 'New ERP System'}
+                {projectTitle || "New ERP System"}
               </span>
               <span className="text-gray-400">&gt;</span>
               <span className="text-[#00253E] font-medium notranslate">
-                {lang === 'de' ? 'Timetable' : 'Time Table'}
+                {lang === "de" ? "Timetable" : "Time Table"}
               </span>
             </div>
           </div>
@@ -640,27 +649,27 @@ export default function Timetable({
           <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:justify-end xl:w-auto">
             <div className="flex bg-gray-100 p-1.5 rounded-lg h-auto min-h-[48px] w-full sm:w-[260px] print:hidden">
               <button
-                onClick={() => setViewMode('grid')}
+                onClick={() => setViewMode("grid")}
                 className={`flex-1 rounded-md text-[14px] font-bold transition-colors px-2 flex items-center justify-center gap-2 ${
                   !isListView
-                    ? 'bg-white shadow-sm text-[#00253E]'
-                    : 'text-gray-500 hover:text-[#00253E]'
+                    ? "bg-white shadow-sm text-[#00253E]"
+                    : "text-gray-500 hover:text-[#00253E]"
                 }`}
               >
                 <Grid className="w-5 h-5" />
-                {lang === 'de' ? 'Rasteransicht' : 'Grid View'}
+                {lang === "de" ? "Rasteransicht" : "Grid View"}
               </button>
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => setViewMode("list")}
                 className={`flex-1 rounded-md text-[14px] font-bold px-2 transition-colors flex items-center justify-center gap-2 ${
                   isListView
-                    ? 'bg-white shadow-sm text-[#00253E]'
-                    : 'text-gray-500 hover:text-[#00253E]'
+                    ? "bg-white shadow-sm text-[#00253E]"
+                    : "text-gray-500 hover:text-[#00253E]"
                 }`}
               >
                 <List className="w-5 h-5" />
 
-                {lang === 'de' ? 'Listenansicht' : 'List View'}
+                {lang === "de" ? "Listenansicht" : "List View"}
               </button>
             </div>
 
@@ -668,17 +677,17 @@ export default function Timetable({
               <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#B5CC2E] rounded-sm"></span>
 
-                {lang === 'de' ? 'Kommunikation' : 'Communication'}
+                {lang === "de" ? "Kommunikation" : "Communication"}
               </div>
               <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#00253E] rounded-sm"></span>
 
-                {lang === 'de' ? 'Einbindung' : 'Involvement'}
+                {lang === "de" ? "Einbindung" : "Involvement"}
               </div>
               <div className="flex items-center gap-4 text-[#00253E] notranslate">
                 <span className="w-[20px] h-[20px] bg-[#A91D54] rounded-sm"></span>
 
-                {lang === 'de' ? 'Anerkennung' : 'Recognition'}
+                {lang === "de" ? "Anerkennung" : "Recognition"}
               </div>
             </div>
           </div>
@@ -689,12 +698,12 @@ export default function Timetable({
         </div>
       </div>
 
-      {stakeholdersWithMeasures.map(sh => (
+      {stakeholdersWithMeasures.map((sh) => (
         <React.Fragment key={sh._id}>
           {renderHiddenGridExport(sh)}
           <div
-            ref={el => {
-              sectionRefs.current.set(sh._id, el)
+            ref={(el) => {
+              sectionRefs.current.set(sh._id, el);
             }}
             className="mb-12 block w-full max-w-full overflow-hidden print:break-inside-avoid"
           >
@@ -731,7 +740,7 @@ export default function Timetable({
                   className="h-[44px] px-6 bg-white border border-[#B5CC2E] rounded text-[14px] font-bold text-gray-700 flex items-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
                 >
                   <Download className="w-5 h-5" />
-                  {lang === 'de' ? 'PDF exportieren' : 'Export PDF'}
+                  {lang === "de" ? "PDF exportieren" : "Export PDF"}
                 </button>
               </div>
             </div>
@@ -742,13 +751,13 @@ export default function Timetable({
               </p>
             ) : isListView ? (
               <div className="flex flex-col gap-4">
-                {getSortedMeasures(sh.measures).map(m => (
+                {getSortedMeasures(sh.measures).map((m) => (
                   <div
                     key={m._id}
                     className="bg-[#F2F2F2] border-l-[4px] border-[#BADA55] rounded-xl p-6 flex flex-row items-center relative overflow-hidden shadow-sm"
                   >
                     <div className="w-[140px] text-[16px] md:text-xl font-semibold text-black">
-                      {lang === 'de'
+                      {lang === "de"
                         ? `Woche ${m.startWeeks}`
                         : `Week ${m.startWeeks}`}
                     </div>
@@ -762,14 +771,14 @@ export default function Timetable({
                       <div className="flex">
                         <span
                           data-pdf-category-pill="true"
-                          data-category-name={m.category || ''}
+                          data-category-name={m.category || ""}
                           className="inline-flex px-5 py-1 rounded-full text-[12px] font-bold tracking-widest"
                           style={{
                             backgroundColor: getCategoryColor(m.category),
                             color: getCategoryTextColor(m.category),
                           }}
                         >
-                          {m.category?.toUpperCase() || 'N/A'}
+                          {m.category?.toUpperCase() || "N/A"}
                         </span>
                       </div>
                     </div>
@@ -784,239 +793,243 @@ export default function Timetable({
               </div>
             ) : (
               (() => {
-              const sortedMeasures = getSortedMeasures(sh.measures)
-              const maxWeeksPre =
-                sortedMeasures
-                  .filter(m => m.timing === 'pre')
-                  .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
-              const maxWeeksPost =
-                sortedMeasures
-                  .filter(m => m.timing === 'post')
-                  .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0
+                const sortedMeasures = getSortedMeasures(sh.measures);
+                const maxWeeksPre =
+                  sortedMeasures
+                    .filter((m) => m.timing === "pre")
+                    .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0;
+                const maxWeeksPost =
+                  sortedMeasures
+                    .filter((m) => m.timing === "post")
+                    .reduce((mx, m) => Math.max(mx, m.startWeeks || 0), 0) || 0;
 
-              const timelineStartBuffer = Math.max(2, maxWeeksPre + 2)
-              const timelineEndBuffer = Math.max(2, maxWeeksPost + 2)
-              const totalWeeks = timelineStartBuffer + timelineEndBuffer
-              const weekWidth = 56
-              const timelineWidth = Math.max(640, totalWeeks * weekWidth)
-              const canvasSidePadding = 140
-              const canvasWidth = timelineWidth + canvasSidePadding * 2
-              const splitLeftPx =
-                canvasSidePadding +
-                (timelineStartBuffer / totalWeeks) * timelineWidth
-              const preCount = sortedMeasures.filter(
-                m => m.timing === 'pre',
-              ).length
-              const postCount = sortedMeasures.filter(
-                m => m.timing === 'post',
-              ).length
-              const upperRows = Math.max(
-                1,
-                Math.ceil(preCount / 2),
-                Math.ceil(postCount / 2),
-              )
-              const lowerRows = Math.max(
-                1,
-                Math.ceil(preCount / 2),
-                Math.ceil(postCount / 2),
-              )
-              const rowGap = 40
-              const cardHeight = 56
-              const topBase = 12
-              const timelineTop = 182 + Math.max(0, upperRows - 1) * rowGap
-              const bottomBase = timelineTop + 92
-              const canvasHeight =
-                bottomBase +
-                cardHeight +
-                Math.max(0, lowerRows - 1) * rowGap +
-                20
+                const timelineStartBuffer = Math.max(2, maxWeeksPre + 2);
+                const timelineEndBuffer = Math.max(2, maxWeeksPost + 2);
+                const totalWeeks = timelineStartBuffer + timelineEndBuffer;
+                const weekWidth = 56;
+                const timelineWidth = Math.max(640, totalWeeks * weekWidth);
+                const canvasSidePadding = 140;
+                const canvasWidth = timelineWidth + canvasSidePadding * 2;
+                const splitLeftPx =
+                  canvasSidePadding +
+                  (timelineStartBuffer / totalWeeks) * timelineWidth;
+                const preCount = sortedMeasures.filter(
+                  (m) => m.timing === "pre",
+                ).length;
+                const postCount = sortedMeasures.filter(
+                  (m) => m.timing === "post",
+                ).length;
+                const upperRows = Math.max(
+                  1,
+                  Math.ceil(preCount / 2),
+                  Math.ceil(postCount / 2),
+                );
+                const lowerRows = Math.max(
+                  1,
+                  Math.ceil(preCount / 2),
+                  Math.ceil(postCount / 2),
+                );
+                const rowGap = 40;
+                const cardHeight = 56;
+                const topBase = 12;
+                const timelineTop = 182 + Math.max(0, upperRows - 1) * rowGap;
+                const bottomBase = timelineTop + 92;
+                const canvasHeight =
+                  bottomBase +
+                  cardHeight +
+                  Math.max(0, lowerRows - 1) * rowGap +
+                  20;
 
-              return (
-                <div
-                  data-pdf-grid-shell="true"
-                  className="relative w-full max-w-full overflow-hidden rounded-xl border border-gray-50 bg-white px-2 py-4 shadow-sm print:overflow-visible sm:px-4 lg:px-6 lg:py-6"
-                >
+                return (
                   <div
-                    data-pdf-grid-viewport="true"
-                    className="w-full max-w-full overflow-x-auto overflow-y-hidden pb-4 print:overflow-visible [overscroll-behavior-x:contain] [-webkit-overflow-scrolling:touch]"
+                    data-pdf-grid-shell="true"
+                    className="relative w-full max-w-full overflow-hidden rounded-xl border border-gray-50 bg-white px-2 py-4 shadow-sm print:overflow-visible sm:px-4 lg:px-6 lg:py-6"
                   >
                     <div
-                      className="min-w-max"
+                      data-pdf-grid-viewport="true"
+                      className="w-full max-w-full overflow-x-auto overflow-y-hidden pb-4 print:overflow-visible [overscroll-behavior-x:contain] [-webkit-overflow-scrolling:touch]"
                     >
-                      <div
-                        data-pdf-grid-canvas="true"
-                        className="relative print:min-w-0"
-                        style={{ height: `${canvasHeight}px`, width: `${canvasWidth}px` }}
-                      >
-                      <div
-                        className="absolute h-[48px] overflow-hidden border border-[#d7dde3]"
-                        style={{
-                          left: `${canvasSidePadding}px`,
-                          top: `${timelineTop}px`,
-                          width: `${timelineWidth}px`,
-                        }}
-                      >
+                      <div className="min-w-max">
                         <div
-                          className="absolute inset-y-0 left-0 bg-[#DDB3C1]"
+                          data-pdf-grid-canvas="true"
+                          className="relative print:min-w-0"
                           style={{
-                            width: `${(timelineStartBuffer / totalWeeks) * timelineWidth}px`,
+                            height: `${canvasHeight}px`,
+                            width: `${canvasWidth}px`,
                           }}
-                        ></div>
-                        <div
-                          className="absolute inset-y-0 right-0 bg-[#9EB7CB]"
-                          style={{
-                            width: `${(timelineEndBuffer / totalWeeks) * timelineWidth}px`,
-                          }}
-                        ></div>
-                      </div>
-
-                      <div
-                        className="absolute h-[78px]"
-                        style={{
-                          left: `${canvasSidePadding}px`,
-                          top: `${timelineTop - 32}px`,
-                          width: `${timelineWidth}px`,
-                        }}
-                      >
-                        {Array.from({ length: totalWeeks + 1 }).map((_, i) => (
+                        >
                           <div
-                            key={i}
-                            className="absolute top-0 h-[50px] w-px bg-[#23445f]/65"
-                            style={{ left: `${(i / totalWeeks) * timelineWidth}px` }}
-                          ></div>
-                        ))}
-                      </div>
-
-                      <div
-                        className="absolute z-30 flex -translate-x-1/2 flex-col items-center"
-                        style={{
-                          left: `${splitLeftPx}px`,
-                          top: `${timelineTop - 73}px`,
-                        }}
-                      >
-                        <div className="h-[56px] w-[3px] bg-[#A91D54]"></div>
-                        <div className="mt-[-1px] flex flex-col items-center bg-white px-2 text-center">
-                          <div className="flex items-center gap-1 text-[20px] font-black leading-none text-[#A91D54] sm:text-[24px]">
-                            <span className="h-[11px] w-[11px] rounded-full bg-[#A91D54] sm:h-[13px] sm:w-[13px]"></span>
-                            <span className="text-[16px] text-[#00253E] sm:text-[20px]">
-                              Start
-                            </span>
-                          </div>
-                          <span className="mt-1 text-[12px] font-bold text-[#00253E]">
-                            {formattedStartDate}
-                          </span>
-                        </div>
-                        <div className="h-[120px] w-[3px] bg-[#A91D54]"></div>
-                      </div>
-
-                      {sortedMeasures.map((m, idx) => {
-                        const isPre = m.timing === 'pre'
-                        const weekPos = isPre
-                          ? timelineStartBuffer - (m.startWeeks || 0)
-                          : timelineStartBuffer + (m.startWeeks || 0)
-                        const xPos =
-                          canvasSidePadding +
-                          (weekPos / totalWeeks) * timelineWidth
-
-                        const orderWithinSide = sortedMeasures
-                          .slice(0, idx + 1)
-                          .filter(item => item.timing === m.timing).length - 1
-                        const isNearStart = (m.startWeeks || 0) <= 2
-                        const nearStartCountWithinSide = sortedMeasures
-                          .slice(0, idx + 1)
-                          .filter(
-                            item =>
-                              item.timing === m.timing &&
-                              (item.startWeeks || 0) <= 2,
-                          ).length
-                        const adjustedOrder = isPre
-                          ? orderWithinSide
-                          : Math.max(0, orderWithinSide - nearStartCountWithinSide)
-                        const isAbove = isPre
-                          ? orderWithinSide % 2 === 0
-                          : isNearStart
-                            ? false
-                            : adjustedOrder % 2 === 0
-                        const rowOffset = Math.floor(orderWithinSide / 2)
-                        const yPos = isAbove
-                          ? topBase + rowOffset * rowGap
-                          : bottomBase + rowOffset * rowGap
-                        const connectorHeight = isAbove
-                          ? timelineTop - (yPos + cardHeight)
-                          : yPos - (timelineTop + 48)
-
-                        return (
-                          <div
-                            key={m._id}
-                            className="absolute z-20 -translate-x-1/2"
+                            className="absolute h-[48px] overflow-hidden border border-[#d7dde3]"
                             style={{
-                              left: `${xPos}px`,
-                              top: `${yPos}px`,
+                              left: `${canvasSidePadding}px`,
+                              top: `${timelineTop}px`,
+                              width: `${timelineWidth}px`,
                             }}
                           >
                             <div
-                              className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#5C7286]/80 ${
-                                isAbove ? 'top-full' : 'bottom-full'
-                              }`}
+                              className="absolute inset-y-0 left-0 bg-[#DDB3C1]"
                               style={{
-                                height: `${Math.max(connectorHeight, 24)}px`,
+                                width: `${(timelineStartBuffer / totalWeeks) * timelineWidth}px`,
                               }}
                             ></div>
+                            <div
+                              className="absolute inset-y-0 right-0 bg-[#9EB7CB]"
+                              style={{
+                                width: `${(timelineEndBuffer / totalWeeks) * timelineWidth}px`,
+                              }}
+                            ></div>
+                          </div>
 
-                            <div className="flex min-w-[150px] max-w-[170px] gap-2 bg-white px-1 py-1 text-[#00253E] sm:min-w-[180px] sm:max-w-[200px] sm:gap-3">
-                              <div
-                                className="mt-1 h-[16px] w-[16px] flex-shrink-0 rounded-none sm:h-[18px] sm:w-[18px]"
-                                style={{
-                                  backgroundColor: getCategoryColor(m.category),
-                                }}
-                              ></div>
-                              <div className="flex flex-col leading-tight">
-                                <span className="text-[13px] font-extrabold sm:text-[15px]">
-                                  {m.type}
-                                </span>
-                                <span className="mt-0.5 text-[11px] font-semibold text-[#00253E] sm:text-[12px]">
-                                  {m.name}
-                                </span>
-                                <span className="mt-1 text-[10px] font-bold text-[#00253E] sm:text-[11px]">
-                                  {m.startWeeks}{' '}
-                                  {m.startWeeks === 1 ? 'Week' : 'Weeks'}
-                                </span>
-                                <span className="mt-0.5 text-[10px] font-bold text-[#00253E]/80 sm:text-[11px]">
-                                  {formatMeasureDate(m)}
+                          <div
+                            className="absolute h-[78px]"
+                            style={{
+                              left: `${canvasSidePadding}px`,
+                              top: `${timelineTop - 32}px`,
+                              width: `${timelineWidth}px`,
+                            }}
+                          >
+                            {Array.from({ length: totalWeeks + 1 }).map(
+                              (_, i) => (
+                                <div
+                                  key={i}
+                                  className="absolute top-0 h-[50px] w-px bg-[#23445f]/65"
+                                  style={{
+                                    left: `${(i / totalWeeks) * timelineWidth}px`,
+                                  }}
+                                ></div>
+                              ),
+                            )}
+                          </div>
+
+                          <div
+                            className="absolute z-30 flex -translate-x-1/2 flex-col items-center"
+                            style={{
+                              left: `${splitLeftPx}px`,
+                              top: `${timelineTop - 73}px`,
+                            }}
+                          >
+                            <div className="h-[56px] w-[3px] bg-[#A91D54]"></div>
+                            <div className="mt-[-1px] flex flex-col items-center bg-white px-2 text-center">
+                              <div className="flex items-center gap-1 text-[20px] font-black leading-none text-[#A91D54] sm:text-[24px]">
+                                <span className="h-[11px] w-[11px] rounded-full bg-[#A91D54] sm:h-[13px] sm:w-[13px]"></span>
+                                <span className="text-[16px] text-[#00253E] sm:text-[20px]">
+                                  
+                                  {lang === "de" ? "Kick off" : "Start"}
                                 </span>
                               </div>
+                              <span className="mt-1 text-[12px] font-bold text-[#00253E]">
+                                {formattedStartDate}
+                              </span>
                             </div>
+                            <div className="h-[120px] w-[3px] bg-[#A91D54]"></div>
                           </div>
-                        )
-                      })}
+
+                          {sortedMeasures.map((m, idx) => {
+                            const isPre = m.timing === "pre";
+                            const weekPos = isPre
+                              ? timelineStartBuffer - (m.startWeeks || 0)
+                              : timelineStartBuffer + (m.startWeeks || 0);
+                            const xPos =
+                              canvasSidePadding +
+                              (weekPos / totalWeeks) * timelineWidth;
+
+                            const orderWithinSide =
+                              sortedMeasures
+                                .slice(0, idx + 1)
+                                .filter((item) => item.timing === m.timing)
+                                .length - 1;
+                            const isNearStart = (m.startWeeks || 0) <= 2;
+                            const nearStartCountWithinSide = sortedMeasures
+                              .slice(0, idx + 1)
+                              .filter(
+                                (item) =>
+                                  item.timing === m.timing &&
+                                  (item.startWeeks || 0) <= 2,
+                              ).length;
+                            const adjustedOrder = isPre
+                              ? orderWithinSide
+                              : Math.max(
+                                  0,
+                                  orderWithinSide - nearStartCountWithinSide,
+                                );
+                            const isAbove = isPre
+                              ? orderWithinSide % 2 === 0
+                              : isNearStart
+                                ? false
+                                : adjustedOrder % 2 === 0;
+                            const rowOffset = Math.floor(orderWithinSide / 2);
+                            const yPos = isAbove
+                              ? topBase + rowOffset * rowGap
+                              : bottomBase + rowOffset * rowGap;
+                            const connectorHeight = isAbove
+                              ? timelineTop - (yPos + cardHeight)
+                              : yPos - (timelineTop + 48);
+
+                            return (
+                              <div
+                                key={m._id}
+                                className="absolute z-20 -translate-x-1/2"
+                                style={{
+                                  left: `${xPos}px`,
+                                  top: `${yPos}px`,
+                                }}
+                              >
+                                <div
+                                  className={`absolute left-1/2 w-px -translate-x-1/2 bg-[#5C7286]/80 ${
+                                    isAbove ? "top-full" : "bottom-full"
+                                  }`}
+                                  style={{
+                                    height: `${Math.max(connectorHeight, 24)}px`,
+                                  }}
+                                ></div>
+
+                                <div className="flex min-w-[150px] max-w-[170px] gap-2 bg-white px-1 py-1 text-[#00253E] sm:min-w-[180px] sm:max-w-[200px] sm:gap-3">
+                                  <div
+                                    className="mt-1 h-[16px] w-[16px] flex-shrink-0 rounded-none sm:h-[18px] sm:w-[18px]"
+                                    style={{
+                                      backgroundColor: getCategoryColor(
+                                        m.category,
+                                      ),
+                                    }}
+                                  ></div>
+                                  <div className="flex flex-col leading-tight">
+                                    <span className="text-[13px] font-extrabold sm:text-[15px]">
+                                      {m.type}
+                                    </span>
+                                    <span className="mt-0.5 text-[11px] font-semibold text-[#00253E] sm:text-[12px]">
+                                      {m.name}
+                                    </span>
+                                    <span className="mt-1 text-[10px] font-bold text-[#00253E] sm:text-[11px]">
+                                      {m.startWeeks}{" "}
+                                      {lang === "de"
+                                        ? m.startWeeks === 1
+                                          ? "Woche"
+                                          : "Wochen"
+                                        : m.startWeeks === 1
+                                          ? "Week"
+                                          : "Weeks"}
+                                    </span>
+                                    <span className="mt-0.5 text-[10px] font-bold text-[#00253E]/80 sm:text-[11px]">
+                                      {formatMeasureDate(m)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )
-            })()
-          )}
+                );
+              })()
+            )}
           </div>
         </React.Fragment>
       ))}
     </div>
-  )
+  );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // 'use client'
 
@@ -1357,7 +1370,7 @@ export default function Timetable({
 //                             {m.name}
 //                           </span>
 //                           <span className="text-[11px] text-[#00253E]/70 font-black mt-0.5">
-//                             {m.startWeeks} Weeks 
+//                             {m.startWeeks} Weeks
 //                           </span>
 //                         </div>
 //                       </div>
@@ -1369,9 +1382,6 @@ export default function Timetable({
 //                     </div>
 //                   )
 //                 })}
-
-                
-
 
 //               </div>
 //             </div>

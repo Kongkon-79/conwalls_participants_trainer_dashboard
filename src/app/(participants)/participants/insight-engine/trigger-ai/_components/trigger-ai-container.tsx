@@ -259,7 +259,7 @@ ${project?.systemForms?.solutionIdea || "N/A"}
       <div className="flex gap-6">
         <button
           onClick={() => window.history.back()}
-          className="flex items-center gap-2 border border-[#BADA55] px-6 py-3 rounded"
+          className="flex items-center gap-2 border border-[#BADA55] px-6 py-3 font-medium leading-normal rounded"
         >
           <ChevronsLeft size={18} />
           Back
@@ -267,7 +267,7 @@ ${project?.systemForms?.solutionIdea || "N/A"}
 
         <button
           onClick={handleCopyPrompt}
-          className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded"
+          className="flex items-center gap-2 bg-primary text-[#00253E] font-semibold leading-normal px-6 py-3 rounded"
         >
           <Copy size={18} />
           Copy Prompt
